@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using Interfaces;
 using UnityEngine;
 
@@ -7,9 +8,25 @@ using UnityEngine;
 [RequireComponent (typeof (Animator))]
 public class PlayerController : MonoBehaviour, IRunner
 {
-    public Transform RunnerTransform { get; private set; }
+    public static PlayerController Instance;
+    
+    #region InterfaceProperties
 
-    [SerializeField] private float speed = 10f, jumpPower = 2f, groundCheckDistance = 0.15f;
+    public Transform RunnerTransform { get; private set; }
+    public bool HasFinished { get; set; }
+
+    public string Username { get; private set; }
+
+    #endregion
+    
+    public enum CollisionType
+    {
+        Enter,
+        Stay,
+        Exit
+    }
+
+    [SerializeField] private float speed = 10f, groundCheckDistance = 0.4f;
 
     private bool _inControl, _isRagdoll, _isGrounded;
     private FloatingJoystick _joystick;
@@ -21,17 +38,22 @@ public class PlayerController : MonoBehaviour, IRunner
 
     private void Awake()
     {
+        Instance = this;
         _rb = GetComponent<Rigidbody>();
         _capsuleCollider = GetComponent<CapsuleCollider>();
         _anim = GetComponent<Animator>();
         RunnerTransform = transform;
+        Username = "You";
     }
 
     private void Start()
     {
+        GameManager.Instance.CurrentRunners.Add(this);
+        HasFinished = false;
         _joystick = FloatingJoystick.Instance;
         _inControl = true;
         HandleRagdoll(false);
+        transform.position = GameManager.Instance.GetSpawnPoint();
     }
 
     private void Update()
@@ -93,6 +115,57 @@ public class PlayerController : MonoBehaviour, IRunner
         }
     }
 
+    private bool IsGrounded()
+    {
+        var lowerSphere = transform.position + transform.up * (_capsuleCollider.radius + Physics.defaultContactOffset);
+        var groundCheck = Physics.SphereCast(lowerSphere, _capsuleCollider.radius - Physics.defaultContactOffset,
+            -transform.up, out var hit, groundCheckDistance, LayerMask.GetMask("Platform","Obstacle"));
+        return groundCheck;
+    }
+
+    private void OnCollisionEnter(Collision other)
+    {
+        var isInteractable = other.gameObject.TryGetComponent<IInteractable>(out var obj);
+        if (isInteractable)
+        {
+            obj.Interact(this, CollisionType.Enter);
+        }
+    }
+
+    private void OnCollisionStay(Collision other)
+    {
+        var isInteractable = other.gameObject.TryGetComponent<IInteractable>(out var obj);
+        if (isInteractable)
+        {
+            obj.Interact(this, CollisionType.Stay);
+        }
+    }
+
+    private void OnCollisionExit(Collision other)
+    {
+        var isInteractable = other.gameObject.TryGetComponent<IInteractable>(out var obj);
+        if (isInteractable)
+        {
+            obj.Interact(this, CollisionType.Exit);
+        }
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        var isInteractable = other.gameObject.TryGetComponent<IInteractable>(out var obj);
+        if (isInteractable)
+        {
+            obj.Interact(this, CollisionType.Enter);
+        }
+    }
+
+    // private void OnDrawGizmos()
+    // {
+    //     Gizmos.DrawWireSphere(transform.position + transform.up * (_capsuleCollider.radius + Physics.defaultContactOffset) + -transform.up * groundCheckDistance,_capsuleCollider.radius - Physics.defaultContactOffset);
+    // }
+    
+    #region InterfaceMethods
+
     public void HandleRagdoll(bool newValue)
     {
         if (_isRagdoll == newValue) return;
@@ -108,35 +181,24 @@ public class PlayerController : MonoBehaviour, IRunner
             if (component is Rigidbody rb) rb.isKinematic = newValue;
         }
     }
-    
-    private bool IsGrounded()
+
+    public void Jump(float jumpPower)
     {
-        var lowerSphere = transform.position + transform.up * (_capsuleCollider.radius + Physics.defaultContactOffset);
-        var groundCheck = Physics.SphereCast(lowerSphere, _capsuleCollider.radius - Physics.defaultContactOffset,
-            -transform.up, out var hit, groundCheckDistance, LayerMask.GetMask("Platform","Obstacle"));
-        return groundCheck;
+        var jumpForce = (transform.forward + Vector3.up * 1.5f).normalized * jumpPower;
+        _rb.AddForce(jumpForce, ForceMode.VelocityChange);
     }
 
-    private void OnCollisionEnter(Collision other)
+    public void Respawn()
     {
-        var isInteractable = other.gameObject.TryGetComponent<IInteractable>(out var obj);
-        if (isInteractable)
-        {
-            obj.Interact(this, true);
-        }
+        _inControl = true;
+        HandleRagdoll(false);
+        transform.position = GameManager.Instance.GetSpawnPoint();
     }
 
-    private void OnCollisionExit(Collision other)
+    public void Finish()
     {
-        var isInteractable = other.gameObject.TryGetComponent<IInteractable>(out var obj);
-        if (isInteractable)
-        {
-            obj.Interact(this, false);
-        }
+        HasFinished = true;
     }
 
-    // private void OnDrawGizmos()
-    // {
-    //     Gizmos.DrawWireSphere(transform.position + transform.up * (_capsuleCollider.radius + Physics.defaultContactOffset) + -transform.up * groundCheckDistance,_capsuleCollider.radius - Physics.defaultContactOffset);
-    // }
+    #endregion
 }

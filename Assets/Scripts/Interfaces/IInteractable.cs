@@ -1,9 +1,7 @@
-﻿using System.Collections;
-
-namespace Interfaces
+﻿namespace Interfaces
 {
     public interface IInteractable
     {
-        void Interact(IRunner runner, bool entered);
+        void Interact(IRunner runner, PlayerController.CollisionType collisionType);
     }
 }
