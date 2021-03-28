@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ContentModelStore">
+    <e p="C:\UnityProjects\Silly Runners" t="IncludeRecursive">
+      <e p="Assembly-CSharp-Editor.csproj" t="IncludeRecursive" />
+      <e p="Assembly-CSharp.csproj" t="IncludeRecursive" />
+      <e p="Assets" t="Include">
+        <e p="Demigiant" t="Include">
+          <e p="DemiLib" t="Include">
+            <e p="Core" t="Include">
+              <e p="DemiLib.xml" t="Include" />
+              <e p="Editor" t="Include">
+                <e p="DemiEditor.xml" t="Include" />
+              </e>
+            </e>
+          </e>
+          <e p="DOTween" t="Include">
+            <e p="Modules" t="Include">
+              <e p="DOTweenModuleAudio.cs" t="Include" />
+              <e p="DOTweenModulePhysics.cs" t="Include" />
+              <e p="DOTweenModulePhysics2D.cs" t="Include" />
+              <e p="DOTweenModuleSprite.cs" t="Include" />
+              <e p="DOTweenModuleUI.cs" t="Include" />
+              <e p="DOTweenModuleUnityVersion.cs" t="Include" />
+              <e p="DOTweenModuleUtils.cs" t="Include" />
+            </e>
+            <e p="readme.txt" t="Include" />
+          </e>
+          <e p="DOTweenPro" t="Include">
+            <e p="DOTweenAnimation.cs" t="Include" />
+            <e p="DOTweenProShortcuts.cs" t="Include" />
+            <e p="DOTweenTextMeshPro.cs" t="Include" />
+            <e p="DOTweenTk2d.cs" t="Include" />
+            <e p="Editor" t="Include">
+              <e p="DOTweenAnimationInspector.cs" t="Include" />
+              <e p="DOTweenPreviewManager.cs" t="Include" />
+            </e>
+            <e p="readme.txt" t="Include" />
+          </e>
+        </e>
+        <e p="Joystick Pack" t="Include">
+          <e p="Scripts" t="Include">
+            <e p="Base" t="Include">
+              <e p="Joystick.cs" t="Include" />
+            </e>
+            <e p="Editor" t="Include">
+              <e p="DynamicJoystickEditor.cs" t="Include" />
+              <e p="FloatingJoystickEditor.cs" t="Include" />
+              <e p="JoystickEditor.cs" t="Include" />
+              <e p="VariableJoystickEditor.cs" t="Include" />
+            </e>
+            <e p="Joysticks" t="Include">
+              <e p="DynamicJoystick.cs" t="Include" />
+              <e p="FixedJoystick.cs" t="Include" />
+              <e p="FloatingJoystick.cs" t="Include" />
+              <e p="VariableJoystick.cs" t="Include" />
+            </e>
+          </e>
+        </e>
+        <e p="PaintIn3D" t="Include">
+          <e p="InEditor" t="Include">
+            <e p="Scripts" t="Include">
+              <e p="IBrowsable.cs" t="Include" />
+              <e p="P3dContext.cs" t="Include" />
+              <e p="P3dMaterial.cs" t="Include" />
+              <e p="P3dPreset.cs" t="Include" />
+              <e p="P3dShape.cs" t="Include" />
+              <e p="P3dTool.cs" t="Include" />
+              <e p="P3dWindow.cs" t="Include" />
+              <e p="P3dWindow_Browser.cs" t="Include" />
+              <e p="P3dWindow_Camera.cs" t="Include" />
+              <e p="P3dWindow_Config.cs" t="Include" />
+              <e p="P3dWindow_Material.cs" t="Include" />
+              <e p="P3dWindow_Paint.cs" t="Include" />
+              <e p="P3dWindow_Scene.cs" t="Include" />
+              <e p="P3dWindow_Shape.cs" t="Include" />
+              <e p="P3dWindow_Tool.cs" t="Include" />
+            </e>
+          </e>
+          <e p="InGame" t="Include">
+            <e p="Scripts" t="Include">
+              <e p="P3dChangeCounter.cs" t="Include" />
+              <e p="P3dChannelCounter.cs" t="Include" />
+              <e p="P3dCloneMirror.cs" t="Include" />
+              <e p="P3dColor.cs" t="Include" />
+              <e p="P3dColorCounter.cs" t="Include" />
+              <e p="P3dConnectableLines.cs" t="Include" />
+              <e p="P3dConnectablePoints.cs" t="Include" />
+              <e p="P3dGraduallyFade.cs" t="Include" />
+              <e p="P3dHitBetween.cs" t="Include" />
+              <e p="P3dHitCache.cs" t="Include" />
+              <e p="P3dHitCollisions.cs" t="Include" />
+              <e p="P3dHitNearby.cs" t="Include" />
+              <e p="P3dHitParticles.cs" t="Include" />
+              <e p="P3dHitScreen.cs" t="Include" />
+              <e p="P3dHitThrough.cs" t="Include" />
+              <e p="P3dInputManager.cs" t="Include" />
+              <e p="P3dMask.cs" t="Include" />
+              <e p="P3dMaterialCloner.cs" t="Include" />
+              <e p="P3dModel.cs" t="Include" />
+              <e p="P3dPaintable.cs" t="Include" />
+              <e p="P3dPaintableManager.cs" t="Include" />
+              <e p="P3dPaintableState.cs" t="Include" />
+              <e p="P3dPaintableTexture.cs" t="Include" />
+              <e p="P3dPaintableTextureMonitor.cs" t="Include" />
+              <e p="P3dPaintableTextureMonitorMask.cs" t="Include" />
+              <e p="P3dPaintDecal.cs" t="Include" />
+              <e p="P3dPaintFill.cs" t="Include" />
+              <e p="P3dPaintReplace.cs" t="Include" />
+              <e p="P3dPaintReplaceChannels.cs" t="Include" />
+              <e p="P3dPaintSphere.cs" t="Include" />
+              <e p="P3dReadColor.cs" t="Include" />
+              <e p="P3dSlot.cs" t="Include" />
+              <e p="P3dStateManager.cs" t="Include" />
+            </e>
+          </e>
+          <e p="PaintIn3D.asmdef" t="Include" />
+          <e p="Shared" t="Include">
+            <e p="Resources" t="Include">
+              <e p="BlendModes.cginc" t="Include" />
+              <e p="Extrusions.cginc" t="Include" />
+              <e p="Masking.cginc" t="Include" />
+              <e p="P3D Decal.cginc" t="Include" />
+              <e p="P3D Decal.shader" t="Include" />
+              <e p="P3D Fill.cginc" t="Include" />
+              <e p="P3D Fill.shader" t="Include" />
+              <e p="P3D Normal.shader" t="Include" />
+              <e p="P3D Overlap.shader" t="Include" />
+              <e p="P3D Premultiply.shader" t="Include" />
+              <e p="P3D Replace Channels.shader" t="Include" />
+              <e p="P3D Replace.shader" t="Include" />
+              <e p="P3D Sphere.cginc" t="Include" />
+              <e p="P3D Sphere.shader" t="Include" />
+              <e p="P3D Texture.shader" t="Include" />
+              <e p="P3D White.shader" t="Include" />
+              <e p="P3dRenderingPipeline.txt" t="Include" />
+            </e>
+            <e p="Scripts" t="Include">
+              <e p="IClone.cs" t="Include" />
+              <e p="IHit.cs" t="Include" />
+              <e p="IHitCoord.cs" t="Include" />
+              <e p="IHitLine.cs" t="Include" />
+              <e p="IHitPoint.cs" t="Include" />
+              <e p="IHitQuad.cs" t="Include" />
+              <e p="IHitTriangle.cs" t="Include" />
+              <e p="P3dBlendMode.cs" t="Include" />
+              <e p="P3dBlit.cs" t="Include" />
+              <e p="P3dChannel.cs" t="Include" />
+              <e p="P3dClone.cs" t="Include" />
+              <e p="P3dCommand.cs" t="Include" />
+              <e p="P3dCommandDecal.cs" t="Include" />
+              <e p="P3dCommandFill.cs" t="Include" />
+              <e p="P3dCommandReplace.cs" t="Include" />
+              <e p="P3dCommandReplaceChannels.cs" t="Include" />
+              <e p="P3dCommandSphere.cs" t="Include" />
+              <e p="P3dCoord.cs" t="Include" />
+              <e p="P3dCoordCopier.cs" t="Include" />
+              <e p="P3dEditor.cs" t="Include" />
+              <e p="P3dEditorWindow.cs" t="Include" />
+              <e p="P3dGroup.cs" t="Include" />
+              <e p="P3dGroupData.cs" t="Include" />
+              <e p="P3dHelper.cs" t="Include" />
+              <e p="P3dHelper_Editor.cs" t="Include" />
+              <e p="P3dHit.cs" t="Include" />
+              <e p="P3dLinkedBehaviour.cs" t="Include" />
+              <e p="P3dMeshAnalysis.cs" t="Include" />
+              <e p="P3dMeshCache.cs" t="Include" />
+              <e p="P3dModifier.cs" t="Include" />
+              <e p="P3dModifierList.cs" t="Include" />
+              <e p="P3dModifyAngleRandom.cs" t="Include" />
+              <e p="P3dModifyColorRandom.cs" t="Include" />
+              <e p="P3dModifyHardnessPressure.cs" t="Include" />
+              <e p="P3dModifyHardnessRandom.cs" t="Include" />
+              <e p="P3dModifyOpacityPressure.cs" t="Include" />
+              <e p="P3dModifyOpacityRandom.cs" t="Include" />
+              <e p="P3dModifyPositionRandom.cs" t="Include" />
+              <e p="P3dModifyRadiusPressure.cs" t="Include" />
+              <e p="P3dModifyRadiusRandom.cs" t="Include" />
+              <e p="P3dModifyTexturePressure.cs" t="Include" />
+              <e p="P3dModifyTextureRandom.cs" t="Include" />
+              <e p="P3dReader.cs" t="Include" />
+              <e p="P3dRenderingPipeline.cs" t="Include" />
+              <e p="P3dSeamFixer.cs" t="Include" />
+              <e p="P3dShader.cs" t="Include" />
+            </e>
+          </e>
+        </e>
+        <e p="Scripts" t="Include">
+          <e p="Interfaces" t="Include">
+            <e p="IInteractable.cs" t="Include" />
+            <e p="IRunner.cs" t="Include" />
+          </e>
+          <e p="PlayerController.cs" t="Include" />
+          <e p="RotatingPlatform.cs" t="Include" />
+        </e>
+      </e>
+      <e p="obj" t="ExcludeRecursive" />
+      <e p="Packages" t="ExcludeRecursive" />
+      <e p="PaintIn3D.csproj" t="IncludeRecursive" />
+      <e p="Silly Runners.sln" t="IncludeFlat" />
+      <e p="Temp\bin" t="ExcludeRecursive" />
+    </e>
+    <e p="C:\Users\Gaming\AppData\Local\JetBrains\Rider2020.3\extResources" t="IncludeRecursive" />
+    <e p="C:\Users\Gaming\AppData\Local\JetBrains\Rider2020.3\resharper-host\Local\Transient\Rider\v203\SolutionCaches\_Silly Runners.466629944.00" t="ExcludeRecursive" />
+  </component>
+</project>
