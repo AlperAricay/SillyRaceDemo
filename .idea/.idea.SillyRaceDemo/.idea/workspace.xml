@@ -8,21 +8,32 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="HighlightingSettingsPerFile">
+    <setting file="file://$PROJECT_DIR$/Assets/Scripts/Interfaces/IImpulse.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/Scripts/Jumper.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Assets/StandBehaviour.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Assets/Scripts/Checkpoint.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/Scripts/OpponentController.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/Scripts/FinishLine.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/Scripts/GameManager.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Assets/Scripts/TosserCollider.cs" root0="FORCE_HIGHLIGHTING" />
   </component>
   <component name="IdeDocumentHistory">
     <changedPaths>
       <option value="$PROJECT_DIR$/Assets/Scripts/RotatingPlatform.cs" />
-      <option value="$PROJECT_DIR$/Assets/Scripts/Interfaces/IInteractable.cs" />
+      <option value="$PROJECT_DIR$/Assets/Scripts/Checkpoint.cs" />
       <option value="$PROJECT_DIR$/Assets/Scripts/Jumper.cs" />
-      <option value="$PROJECT_DIR$/Assets/Scripts/Interfaces/IRunner.cs" />
-      <option value="$PROJECT_DIR$/Assets/Scripts/PlayerController.cs" />
       <option value="$PROJECT_DIR$/Assets/Scripts/FinishLine.cs" />
+      <option value="$PROJECT_DIR$/Assets/Scripts/RagdollHelper.cs" />
+      <option value="$PROJECT_DIR$/Assets/Scripts/Interfaces/IInteractable.cs" />
+      <option value="$PROJECT_DIR$/Assets/Scripts/Interfaces/IImpulser.cs" />
+      <option value="$PROJECT_DIR$/Assets/Scripts/Interfaces/IImpulse.cs" />
+      <option value="$PROJECT_DIR$/Assets/Scripts/TosserCollider.cs" />
       <option value="$PROJECT_DIR$/Assets/Scripts/GameManager.cs" />
+      <option value="$PROJECT_DIR$/Assets/Scripts/KillerCollider.cs" />
+      <option value="$PROJECT_DIR$/Assets/StandBehaviour.cs" />
+      <option value="$PROJECT_DIR$/Assets/Scripts/Interfaces/IRunner.cs" />
       <option value="$PROJECT_DIR$/Assets/Scripts/OpponentController.cs" />
+      <option value="$PROJECT_DIR$/Assets/Scripts/PlayerController.cs" />
     </changedPaths>
   </component>
   <component name="ProjectId" id="1qNviXLu7KWyPjDRu3dN6xfiYHc" />
@@ -65,7 +76,9 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1616932990086</updated>
-      <workItem from="1616932996485" duration="13356000" />
+      <workItem from="1616932996485" duration="14240000" />
+      <workItem from="1617037809406" duration="1012000" />
+      <workItem from="1617111308397" duration="20325000" />
     </task>
     <servers />
   </component>

@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Cinemachine;
 using Interfaces;
 using UnityEngine;
 using UnityEngine.UI;
@@ -9,24 +10,29 @@ using UnityEngine.UI;
 public class GameManager : MonoBehaviour
 {
     public static GameManager Instance;
-    
-    public List<IRunner> CurrentRunners = new List<IRunner>(), FinishedRunners = new List<IRunner>();
-    public List<Transform> spawnPoints = new List<Transform>();
-    
-    [SerializeField] private Transform finishLine, rankingsParent;
+
+    public List<IRunner> CurrentRunners = new List<IRunner>();
+    public CinemachineVirtualCamera thirdPersonCamera;
+
+    [SerializeField] private Transform finishLine, rankingsParent, checkpointsParent;
     [SerializeField] private GameObject winPanel, losePanel;
     [SerializeField] private Text playerRankText;
-
-    private IRunner _player;
-    private List<Text> _rankingUsernameTexts = new List<Text>();
-    private int _spawnPointIndex;
     
+    private IRunner _player;
+    private readonly List<IRunner> _finishedRunners = new List<IRunner>();
+    private List<Text> _rankingUsernameTexts = new List<Text>();
+    private List<Checkpoint> _checkpoints = new List<Checkpoint>();
+    private int _spawnPointIndex;
+
     private void Awake()
     {
         Instance = this;
         CurrentRunners.Clear();
-        FinishedRunners.Clear();
+        _finishedRunners.Clear();
+        _checkpoints.Clear();
         foreach (Transform child in rankingsParent) _rankingUsernameTexts.Add(child.GetChild(1).GetComponent<Text>());
+        for (int i = 0; i < checkpointsParent.childCount; i++)
+            _checkpoints.Add(checkpointsParent.GetChild(i).GetComponent<Checkpoint>());
         _spawnPointIndex = 0;
     }
 
@@ -38,13 +44,14 @@ public class GameManager : MonoBehaviour
     private void Update()
     {
         CurrentRunners = CurrentRunners.OrderBy(runner => Vector3.Distance(runner.RunnerTransform.position, finishLine.position)).ToList();
-        playerRankText.text = (CurrentRunners.FindIndex(runner => runner == _player) + FinishedRunners.Count + 1).ToString();
+        playerRankText.text = (CurrentRunners.FindIndex(runner => runner == _player) + _finishedRunners.Count + 1).ToString();
     }
 
-    public Vector3 GetSpawnPoint()
+    public Vector3 GetSpawnPoint(IRunner runner)
     {
-        var pos = spawnPoints[_spawnPointIndex].position;
-        if (_spawnPointIndex == spawnPoints.Count - 1)
+        var pos = _checkpoints[runner.CurrentCheckpointIndex].spawnPoints[_spawnPointIndex].position;
+        
+        if (_spawnPointIndex == _checkpoints[runner.CurrentCheckpointIndex].spawnPoints.Count - 1)
         {
             _spawnPointIndex = 0;
         }
@@ -57,20 +64,20 @@ public class GameManager : MonoBehaviour
 
     public void OnRunnerFinished(IRunner runner)
     {
-        if (runner.HasFinished || FinishedRunners.Count == 10) return;
+        if (runner.HasFinished || _finishedRunners.Count == 10) return;
         runner.HasFinished = true;
         CurrentRunners.Remove(runner);
-        FinishedRunners.Add(runner);
+        _finishedRunners.Add(runner);
 
-        if (FinishedRunners.Count == 10)
+        if (_finishedRunners.Count == 10)
             EndGame();
         else if (runner == _player)
         {
             var c = 0;
             CurrentRunners = CurrentRunners.OrderBy(runnerInList => Vector3.Distance(runnerInList.RunnerTransform.position, finishLine.position)).ToList();
-            while (FinishedRunners.Count < 10)
+            while (_finishedRunners.Count < 10)
             {
-                FinishedRunners.Add(CurrentRunners[c]);
+                _finishedRunners.Add(CurrentRunners[c]);
                 c++;
             }
             EndGame();
@@ -92,12 +99,12 @@ public class GameManager : MonoBehaviour
     public void EndGame()
     {
         playerRankText.transform.parent.gameObject.SetActive(false);
-        if (FinishedRunners.Contains(_player))
+        if (_finishedRunners.Contains(_player))
         {
             //qualified
-            for (var i = 0; i < FinishedRunners.Count; i++)
+            for (var i = 0; i < _finishedRunners.Count; i++)
             {
-                var runner = FinishedRunners[i];
+                var runner = _finishedRunners[i];
                 if (runner == _player)
                 {
                     _rankingUsernameTexts[i].text = runner.Username.ToUpper();

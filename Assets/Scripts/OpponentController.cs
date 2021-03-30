@@ -7,6 +7,8 @@ using Random = UnityEngine.Random;
 
 public class OpponentController : MonoBehaviour, IRunner
 {
+    public bool IsStanding { get; set; }
+    public int CurrentCheckpointIndex { get; set; }
     public string Username { get; private set; }
     public Transform RunnerTransform { get; private set; }
     public bool HasFinished { get; set; }
@@ -15,17 +17,23 @@ public class OpponentController : MonoBehaviour, IRunner
     {
         RunnerTransform = transform;
         Username = "Bot " + Random.Range(1, 9999);
+        CurrentCheckpointIndex = 0;
     }
 
     private void Start()
     {
         GameManager.Instance.CurrentRunners.Add(this);
-        transform.position = GameManager.Instance.GetSpawnPoint();
+        transform.position = GameManager.Instance.GetSpawnPoint(this);
     }
 
     public void HandleRagdoll(bool newValue)
     {
         throw new System.NotImplementedException();
+    }
+
+    public void HandleRagdoll(float impulseForce, Vector3 impulseDirection)
+    {
+        throw new NotImplementedException();
     }
 
     public void Jump(float jumpPower)

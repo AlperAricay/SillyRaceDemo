@@ -186,17 +186,22 @@
           </e>
         </e>
         <e p="Scripts" t="Include">
+          <e p="Checkpoint.cs" t="Include" />
           <e p="FinishLine.cs" t="Include" />
           <e p="GameManager.cs" t="Include" />
           <e p="Interfaces" t="Include">
+            <e p="IImpulse.cs" t="Include" />
             <e p="IInteractable.cs" t="Include" />
             <e p="IRunner.cs" t="Include" />
           </e>
           <e p="Jumper.cs" t="Include" />
+          <e p="KillerCollider.cs" t="Include" />
           <e p="OpponentController.cs" t="Include" />
           <e p="PlayerController.cs" t="Include" />
           <e p="RotatingPlatform.cs" t="Include" />
+          <e p="TosserCollider.cs" t="Include" />
         </e>
+        <e p="StandBehaviour.cs" t="Include" />
       </e>
       <e p="obj" t="ExcludeRecursive" />
       <e p="Packages" t="ExcludeRecursive" />
