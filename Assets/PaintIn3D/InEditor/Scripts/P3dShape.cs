@@ -20,19 +20,17 @@ namespace PaintIn3D
 				{
 					cachedShapes = new List<P3dShape>();
 #if UNITY_EDITOR
-					var guids = UnityEditor.AssetDatabase.FindAssets("t:prefab");
+					var scriptGuid  = P3dHelper.FindScriptGUID<P3dShape>();
 
-					foreach (var guid in guids)
+					if (scriptGuid != null)
 					{
-						var prefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>(UnityEditor.AssetDatabase.GUIDToAssetPath(guid));
-
-						if (prefab != null)
+						foreach (var prefabGuid in UnityEditor.AssetDatabase.FindAssets("t:prefab"))
 						{
-							var brush = prefab.GetComponent<P3dShape>();
+							var shape = P3dHelper.LoadPrefabIfItContainsScriptGUID<P3dShape>(prefabGuid, scriptGuid);
 
-							if (brush != null)
+							if (shape != null)
 							{
-								cachedShapes.Add(brush);
+								cachedShapes.Add(shape);
 							}
 						}
 					}
@@ -74,16 +72,19 @@ namespace PaintIn3D
 namespace PaintIn3D
 {
 	using UnityEditor;
+	using TARGET = P3dShape;
 
 	[CanEditMultipleObjects]
-	[CustomEditor(typeof(P3dShape))]
-	public class P3dShape_Editor : P3dEditor<P3dShape>
+	[CustomEditor(typeof(TARGET))]
+	public class P3dShape_Editor : P3dEditor
 	{
 		protected override void OnInspector()
 		{
-			if (P3dShape.CachedShapes.Contains(Target) == false && P3dHelper.IsAsset(Target) == true)
+			TARGET tgt; TARGET[] tgts; GetTargets(out tgt, out tgts);
+
+			if (P3dShape.CachedShapes.Contains(tgt) == false && P3dHelper.IsAsset(tgt) == true)
 			{
-				P3dShape.CachedShapes.Add(Target);
+				P3dShape.CachedShapes.Add(tgt);
 			}
 
 			Draw("category");

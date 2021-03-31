@@ -25,15 +25,13 @@ namespace PaintIn3D
 				{
 					cachedTools = new List<P3dTool>();
 #if UNITY_EDITOR
-					var guids = UnityEditor.AssetDatabase.FindAssets("t:prefab");
+					var scriptGuid  = P3dHelper.FindScriptGUID<P3dTool>();
 
-					foreach (var guid in guids)
+					if (scriptGuid != null)
 					{
-						var prefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>(UnityEditor.AssetDatabase.GUIDToAssetPath(guid));
-
-						if (prefab != null)
+						foreach (var prefabGuid in UnityEditor.AssetDatabase.FindAssets("t:prefab"))
 						{
-							var tool = prefab.GetComponent<P3dTool>();
+							var tool = P3dHelper.LoadPrefabIfItContainsScriptGUID<P3dTool>(prefabGuid, scriptGuid);
 
 							if (tool != null)
 							{
@@ -198,16 +196,19 @@ namespace PaintIn3D
 namespace PaintIn3D
 {
 	using UnityEditor;
+	using TARGET = P3dTool;
 
 	[CanEditMultipleObjects]
-	[CustomEditor(typeof(P3dTool))]
-	public class P3dTool_Editor : P3dEditor<P3dTool>
+	[CustomEditor(typeof(TARGET))]
+	public class P3dTool_Editor : P3dEditor
 	{
 		protected override void OnInspector()
 		{
-			if (P3dTool.CachedTools.Contains(Target) == false && P3dHelper.IsAsset(Target) == true)
+			TARGET tgt; TARGET[] tgts; GetTargets(out tgt, out tgts);
+
+			if (P3dTool.CachedTools.Contains(tgt) == false && P3dHelper.IsAsset(tgt) == true)
 			{
-				P3dTool.CachedTools.Add(Target);
+				P3dTool.CachedTools.Add(tgt);
 			}
 
 			Draw("category");

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace PaintIn3D
 {
 	/// <summary>This is the base class for all components that repeat paint commands (e.g. mirroring).</summary>
-	public abstract class P3dClone : P3dLinkedBehaviour<P3dClone>, IClone
+	public abstract class P3dClone : MonoBehaviour, IClone
 	{
 		[System.NonSerialized]
 		public static int MatrixCount;
@@ -22,6 +22,9 @@ namespace PaintIn3D
 
 		[System.NonSerialized]
 		private static List<IClone> tempCloners = new List<IClone>();
+
+		/// <summary>This stores all active and enabled instances in the open scenes.</summary>
+		public static LinkedList<P3dClone> Instances { get { return instances; } } private static LinkedList<P3dClone> instances = new LinkedList<P3dClone>(); private LinkedListNode<P3dClone> instancesNode;
 
 		public static void BuildCloners(List<IClone> cloners = null)
 		{
@@ -46,13 +49,9 @@ namespace PaintIn3D
 			}
 			else
 			{
-				var cloner = P3dClone.FirstInstance;
-
-				for (var i = 0; i < P3dClone.InstanceCount; i++)
+				foreach (var instance in instances)
 				{
-					tempCloners.Add(cloner);
-
-					cloner = cloner.NextInstance;
+					tempCloners.Add(instance);
 				}
 			}
 
@@ -76,6 +75,16 @@ namespace PaintIn3D
 			tempRotMatrices.Add(rotMatrix);
 
 			command.Transform(posMatrix, rotMatrix);
+		}
+
+		protected virtual void OnEnable()
+		{
+			instancesNode = instances.AddLast(this);
+		}
+
+		protected virtual void OnDisable()
+		{
+			instances.Remove(instancesNode); instancesNode = null;
 		}
 	}
 }

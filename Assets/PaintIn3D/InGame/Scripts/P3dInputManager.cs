@@ -8,38 +8,44 @@ using NewCode = Unity​Engine.InputSystem.Key;
 namespace PaintIn3D
 {
 	/// <summary>This component converts mouse and touch inputs into a single interface.</summary>
-	public class P3dInputManager
+	[HelpURL(P3dHelper.HelpUrlPrefix + "P3dInputManager")]
+	[AddComponentMenu(P3dHelper.ComponentMenuPrefix + "Input Manager")]
+	public class P3dInputManager : MonoBehaviour
 	{
-		/// <summary>This allows you to control the GUI layers that will be tested against. Layer 5 is the default UI layer.</summary>
-		public static readonly LayerMask GuiLayers = 1 << 5;
-
 		public abstract class Link
 		{
 			public Finger Finger;
 
-			public static T FindOrCreate<T>(ref List<T> links, Finger finger)
+			public static T Find<T>(ref List<T> links, Finger finger, bool allowCreation = true)
 				where T : Link, new()
 			{
-				if (links == null)
+				if (links != null)
+				{
+					foreach (var link in links)
+					{
+						if (link.Finger == finger)
+						{
+							return link;
+						}
+					}
+				}
+				else if (allowCreation == true)
 				{
 					links = new List<T>();
 				}
 
-				foreach (var link in links)
+				if (allowCreation == true)
 				{
-					if (link.Finger == finger)
-					{
-						return link;
-					}
+					var newLink = new T();
+
+					newLink.Finger = finger;
+
+					links.Add(newLink);
+
+					return newLink;
 				}
 
-				var newLink = new T();
-
-				newLink.Finger = finger;
-
-				links.Add(newLink);
-
-				return newLink;
+				return null;
 			}
 
 			public static void ClearAll<T>(List<T> links)
@@ -66,47 +72,50 @@ namespace PaintIn3D
 			public int     Index;
 			public float   Pressure;
 			public bool    Down;
-			public bool    Set;
 			public bool    Up;
-			public bool    StartedOverGui;
 			public float   Age;
-			public Vector2 StartPosition;
-			public Vector2 PositionA;
-			public Vector2 PositionB;
-			public Vector2 PositionC;
-			public Vector2 PositionD;
-
-			public Vector2 GetSmoothScreenPosition(float t)
-			{
-				if (Set == true)
-				{
-					return Hermite(PositionD, PositionC, PositionB, PositionA, t);
-				}
-
-				return Vector2.LerpUnclamped(PositionC, PositionA, t);
-			}
+			public Vector2 StartScreenPosition;
+			public Vector2 ScreenPosition;
+			public Vector2 ScreenPositionOld;
+			public Vector2 ScreenPositionOldOld;
+			public Vector2 ScreenPositionOldOldOld;
 
 			public float SmoothScreenPositionDelta
 			{
 				get
 				{
-					if (Set == true)
+					if (Up == false)
 					{
-						return Vector2.Distance(PositionC, PositionB);
+						return Vector2.Distance(ScreenPositionOldOld, ScreenPositionOld);
 					}
 
-					return Vector2.Distance(PositionC, PositionA);
+					return Vector2.Distance(ScreenPositionOldOld, ScreenPosition);
 				}
 			}
 
-			public bool Tap
+			public Vector2 GetSmoothScreenPosition(float t)
 			{
-				get
+				if (Up == false)
 				{
-					return Up == true && Age <= 0.25f && Vector2.Distance(StartPosition, PositionA) * ScaleFactor < 25.0f;
+					return Hermite(ScreenPositionOldOldOld, ScreenPositionOldOld, ScreenPositionOld, ScreenPosition, t);
 				}
+
+				return Vector2.LerpUnclamped(ScreenPositionOldOld, ScreenPosition, t);
 			}
 		}
+
+		/// <summary>This event will tell you when a finger begins touching the screen.</summary>
+		public static event System.Action<Finger> OnFingerDown;
+
+		/// <summary>This event will tell you when a finger has begun, is, or has just stopped touching the screen.</summary>
+		public static event System.Action<Finger> OnFingerUpdate;
+
+		/// <summary>This event will tell you when a finger stops touching the screen.</summary>
+		public static event System.Action<Finger> OnFingerUp;
+
+		public const int MOUSE_FINGER_INDEX = -1;
+
+		public const int HOVER_FINGER_INDEX = -1337;
 
 		private static List<RaycastResult> tempRaycastResults = new List<RaycastResult>(10);
 
@@ -114,9 +123,12 @@ namespace PaintIn3D
 
 		private static EventSystem tempEventSystem;
 
-		private List<Finger> fingers = new List<Finger>();
+		private static List<Finger> fingers = new List<Finger>();
 
 		private static Stack<Finger> pool = new Stack<Finger>();
+
+		/// <summary>This stores all active and enabled instances.</summary>
+		public static LinkedList<P3dInputManager> Instances = new LinkedList<P3dInputManager>(); private LinkedListNode<P3dInputManager> instancesNode;
 
 		public static float ScaleFactor
 		{
@@ -133,7 +145,7 @@ namespace PaintIn3D
 			}
 		}
 
-		public List<Finger> Fingers
+		public static List<Finger> Fingers
 		{
 			get
 			{
@@ -141,63 +153,13 @@ namespace PaintIn3D
 			}
 		}
 
-		public Vector2 GetAveragePosition(bool ignoreStartedOverGui)
+		public static bool PointOverGui(Vector2 screenPosition, int guiLayers = 1 << 5)
 		{
-			var total = Vector2.zero;
-			var count = 0;
-
-			foreach (var finger in fingers)
-			{
-				if (ignoreStartedOverGui == false || finger.StartedOverGui == false)
-				{
-					total += finger.PositionA;
-					count += 1;
-				}
-			}
-
-			return count == 0 ? total : total / count;
+			return RaycastGui(screenPosition, guiLayers).Count > 0;
 		}
 
-		public Vector2 GetAveragePullScaled(bool ignoreStartedOverGui)
-		{
-			var total = Vector2.zero;
-			var count = 0;
-
-			foreach (var finger in fingers)
-			{
-				if (ignoreStartedOverGui == false || finger.StartedOverGui == false)
-				{
-					total += finger.PositionA - finger.StartPosition;
-					count += 1;
-				}
-			}
-
-			return count == 0 ? total : total * ScaleFactor / count;
-		}
-
-		public Vector2 GetAverageDeltaScaled(bool ignoreStartedOverGui)
-		{
-			var total = Vector2.zero;
-			var count = 0;
-
-			foreach (var finger in fingers)
-			{
-				if (ignoreStartedOverGui == false || finger.StartedOverGui == false)
-				{
-					total += finger.PositionA - finger.PositionB;
-					count += 1;
-				}
-			}
-
-			return count == 0 ? total : total * ScaleFactor / count;
-		}
-
-		public static bool PointOverGui(Vector2 screenPosition)
-		{
-			return RaycastGui(screenPosition).Count > 0;
-		}
-
-		public static List<RaycastResult> RaycastGui(Vector2 screenPosition)
+		/// <summary>This method gives you all UI elements under the specified screen position, where element 0 is the first/top one.</summary>
+		public static List<RaycastResult> RaycastGui(Vector2 screenPosition, int guiLayers = 1 << 5)
 		{
 			tempRaycastResults.Clear();
 
@@ -233,7 +195,7 @@ namespace PaintIn3D
 						var raycastResult = tempRaycastResults[i];
 						var raycastLayer  = 1 << raycastResult.gameObject.layer;
 
-						if ((raycastLayer & GuiLayers) == 0)
+						if ((raycastLayer & guiLayers) == 0)
 						{
 							tempRaycastResults.RemoveAt(i);
 						}
@@ -244,9 +206,70 @@ namespace PaintIn3D
 			return tempRaycastResults;
 		}
 
-		public void Update(KeyCode key)
+		public static Vector2 GetAveragePosition(List<Finger> fingers, bool ignoreStartedOverGui)
 		{
-			// Discard old fingers that went up
+			var total = Vector2.zero;
+			var count = 0;
+
+			foreach (var finger in fingers)
+			{
+				total += finger.ScreenPosition;
+				count += 1;
+			}
+
+			return count == 0 ? total : total / count;
+		}
+
+		public static Vector2 GetAveragePullScaled(List<Finger> fingers, bool ignoreStartedOverGui)
+		{
+			var total = Vector2.zero;
+			var count = 0;
+
+			foreach (var finger in fingers)
+			{
+				total += finger.ScreenPosition - finger.StartScreenPosition;
+				count += 1;
+			}
+
+			return count == 0 ? total : total * ScaleFactor / count;
+		}
+
+		public static Vector2 GetAverageDeltaScaled(List<Finger> fingers)
+		{
+			var total = Vector2.zero;
+			var count = 0;
+
+			foreach (var finger in fingers)
+			{
+				total += finger.ScreenPosition - finger.ScreenPositionOld;
+				count += 1;
+			}
+
+			return count == 0 ? total : total * ScaleFactor / count;
+		}
+
+		/// <summary>If your component uses this component, then make sure you call this method at least once before you use it (e.g. from <b>Awake</b>).</summary>
+		public static void EnsureThisComponentExists()
+		{
+			if (Instances.Count == 0 && Application.isPlaying == true)
+			{
+				new GameObject("P3dInputManager").AddComponent<P3dInputManager>();
+			}
+		}
+
+		protected virtual void OnEnable()
+		{
+			instancesNode = Instances.AddLast(this);
+		}
+
+		protected virtual void OnDisable()
+		{
+			Instances.Remove(instancesNode); instancesNode = null;
+		}
+
+		protected virtual void Update()
+		{
+			// Remove previously up fingers, or mark them as up in case the up event isn't read correctly
 			for (var i = fingers.Count - 1; i >= 0; i--)
 			{
 				var finger = fingers[i];
@@ -254,6 +277,10 @@ namespace PaintIn3D
 				if (finger.Up == true)
 				{
 					fingers.RemoveAt(i); pool.Push(finger);
+				}
+				else
+				{
+					finger.Up = true;
 				}
 			}
 
@@ -272,25 +299,25 @@ namespace PaintIn3D
 			// If there are no real touches, simulate some from the mouse?
 			else
 			{
-				if (key != KeyCode.None)
-				{
-					if (IsPressed(key) == true || IsUp(key) == true)
-					{
-						AddFinger(-1, MousePosition, 1.0f, IsUp(key));
-					}
-				}
-				else
-				{
-					var set = false;
-					var up  = false;
+				var set = false;
+				var up  = false;
 
-					GetMouse(ref set, ref up);
+				GetMouse(ref set, ref up);
 
-					if (set == true || up == true)
-					{
-						AddFinger(-1, MousePosition, 1.0f, up);
-					}
+				AddFinger(HOVER_FINGER_INDEX, MousePosition, 0.0f, false);
+
+				if (set == true || up == true)
+				{
+					AddFinger(MOUSE_FINGER_INDEX, MousePosition, 1.0f, up);
 				}
+			}
+
+			// Events
+			foreach (var finger in fingers)
+			{
+				if (finger.Down == true && OnFingerDown   != null) OnFingerDown  .Invoke(finger);
+				if (                       OnFingerUpdate != null) OnFingerUpdate.Invoke(finger);
+				if (finger.Up   == true && OnFingerUp     != null) OnFingerUp    .Invoke(finger);
 			}
 		}
 
@@ -315,30 +342,30 @@ namespace PaintIn3D
 			{
 				finger = pool.Count > 0 ? pool.Pop() : new Finger();
 
-				finger.Index          = index;
-				finger.Down           = true;
-				finger.Age            = 0.0f;
-				finger.StartPosition  = screenPosition;
-				finger.PositionB      = screenPosition;
-				finger.PositionC      = screenPosition;
-				finger.PositionD      = screenPosition;
-				finger.StartedOverGui = PointOverGui(screenPosition);
+				finger.Index = index;
+				finger.Down  = true;
+				finger.Age   = 0.0f;
+
+				finger.StartScreenPosition     = screenPosition;
+				finger.ScreenPositionOld       = screenPosition;
+				finger.ScreenPositionOldOld    = screenPosition;
+				finger.ScreenPositionOldOldOld = screenPosition;
 
 				fingers.Add(finger);
 			}
 			else
 			{
-				finger.Age      += Time.deltaTime;
-				finger.PositionD = finger.PositionC;
-				finger.PositionC = finger.PositionB;
-				finger.PositionB = finger.PositionA;
-				finger.Down      = false;
+				finger.Down = false;
+				finger.Age += Time.deltaTime;
+
+				finger.ScreenPositionOldOldOld = finger.ScreenPositionOldOld;
+				finger.ScreenPositionOldOld    = finger.ScreenPositionOld;
+				finger.ScreenPositionOld       = finger.ScreenPosition;
 			}
 
-			finger.Pressure  = pressure;
-			finger.PositionA = screenPosition;
-			finger.Set       = up == false;
-			finger.Up        = up;
+			finger.Pressure       = pressure;
+			finger.ScreenPosition = screenPosition;
+			finger.Up             = up;
 		}
 
 		private static Vector2 Hermite(Vector2 a, Vector2 b, Vector2 c, Vector2 d, float t)

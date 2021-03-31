@@ -105,13 +105,13 @@ MonoBehaviour:
     _MainTex@Legacy
     Shaders/Transparent/Diffuse
 
-    _MainTex@Legacy Shaders/Transparent/Bumped
-    Diffuse
-
-    _MainTex@Legacy Shaders/Transparent/Specular
+    _MainTex@Legacy Shaders/Transparent/Bumped Diffuse
 
     _MainTex@Legacy
-    Shaders/Transparent/Bumped Specular
+    Shaders/Transparent/Specular
+
+    _MainTex@Legacy Shaders/Transparent/Bumped
+    Specular
 
     _MainTex@Legacy Shaders/Transparent/Cutout/VertexLit
 
@@ -131,24 +131,24 @@ MonoBehaviour:
 
     _MainTex@Legacy Shaders/Parallax Specular
 
-    _MainTex@Legacy
-    Shaders/Self-Illumin/Parallax Diffuse
-
     _MainTex@Legacy Shaders/Self-Illumin/Parallax
-    Specular
-
-    _MainTex@Legacy Shaders/Reflective/Parallax Diffuse
-
-    _MainTex@Legacy
-    Shaders/Reflective/Parallax Specular
-
-    _MainTex@Legacy Shaders/Transparent/Parallax
     Diffuse
 
-    _MainTex@Legacy Shaders/Transparent/Parallax Specular
+    _MainTex@Legacy Shaders/Self-Illumin/Parallax Specular
 
     _MainTex@Legacy
-    Shaders/Transparent/Cutout/Soft Edge Unlit
+    Shaders/Reflective/Parallax Diffuse
+
+    _MainTex@Legacy Shaders/Reflective/Parallax
+    Specular
+
+    _MainTex@Legacy Shaders/Transparent/Parallax Diffuse
+
+    _MainTex@Legacy
+    Shaders/Transparent/Parallax Specular
+
+    _MainTex@Legacy Shaders/Transparent/Cutout/Soft
+    Edge Unlit
 
     _MainTex@Legacy Shaders/Decal
 
@@ -470,27 +470,19 @@ MonoBehaviour:
     _MainTex@Lean/Common/Object
 
     _MainTex@Paint
-    in 3D/P3D Alpha
+    in 3D/Alpha
 
-    _MainTex@Paint in 3D/P3D Overlay
+    _MainTex@Paint in 3D/Overlay
 
-    _MainTex@Paint in
-    3D/P3D Solid
+    _MainTex@Paint in 3D/Solid
 
-    _MainTex@Paint in 3D/Shield
+    _MainTex@Paint
+    in 3D/Shield
 
     _BASE_COLOR_MAP@Shader Graphs/ArnoldStandardSurface
 
     _BASE_COLOR_MAP@Shader
     Graphs/ArnoldStandardSurfaceTransparent
-
-    _MainTex@Shader Graphs/P3D Alpha
-    SRP
-
-    _MainTex@Shader Graphs/P3D Overlay SRP
-
-    _MainTex@Shader Graphs/P3D
-    Solid SRP
 
     _BASE_COLOR_MAP@Shader Graphs/PhysicalMaterial3DsMax
 

@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using DG.Tweening;
 using Interfaces;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 [RequireComponent (typeof (Rigidbody))]
 [RequireComponent (typeof (CapsuleCollider))]
@@ -10,6 +12,8 @@ using UnityEngine;
 public class PlayerController : MonoBehaviour, IRunner
 {
     public static PlayerController Instance;
+    
+    public GameplayPhases currentPhase;
     
     #region InterfaceProperties
 
@@ -28,7 +32,7 @@ public class PlayerController : MonoBehaviour, IRunner
         Exit
     }
 
-    [SerializeField] private float speed = 10f, groundCheckDistance = 0.4f, ragdollToStandTime = 2f;
+    [SerializeField] private float speed = 10f, groundCheckDistance = 0.4f, ragdollToStandTime = 2f, paintingCursorSpeed = 5f;
 
     private float _ragdollTime;
     private bool _inControl, _isRagdoll, _isGrounded;
@@ -41,7 +45,16 @@ public class PlayerController : MonoBehaviour, IRunner
     private List<Rigidbody> _rigidbodiesList = new List<Rigidbody>();
     private List<Collider> _rigidbodyCollidersList = new List<Collider>();
     private static readonly int Stand = Animator.StringToHash("Stand");
+    private Transform _paintingSphere;
+    private static readonly int Paint = Animator.StringToHash("Paint");
 
+    public enum GameplayPhases
+    {
+        StartingPhase,
+        RacingPhase,
+        PaintingPhase
+    }
+    
     private void Awake()
     {
         Instance = this;
@@ -51,6 +64,8 @@ public class PlayerController : MonoBehaviour, IRunner
         RunnerTransform = transform;
         Username = "You";
         CurrentCheckpointIndex = 0;
+        //currentPhase = GameplayPhases.StartingPhase;
+        currentPhase = GameplayPhases.RacingPhase;
         
         var rigidBodies=GetComponentsInChildren(typeof(Rigidbody));
         for (var i = 1; i < rigidBodies.Length; i++)
@@ -80,36 +95,55 @@ public class PlayerController : MonoBehaviour, IRunner
             coll.enabled = false;
         }
         transform.position = GameManager.Instance.GetSpawnPoint(this);
+        _paintingSphere = GameManager.Instance.paintingSphere;
     }
 
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Space))
+        switch (currentPhase)
         {
-            HandleRagdoll(true);
-            transform.GetChild(2).GetChild(0).GetComponent<Rigidbody>().AddForce((-transform.forward + Vector3.down).normalized * 50, ForceMode.VelocityChange);
-        }
-        else if (Input.GetKeyDown(KeyCode.Backspace))
-        {
-            HandleRagdoll(false);
-        }
-        _isGrounded = IsGrounded();
-        if (!_isRagdoll)
-        {
-            Rotate();
-            _anim.SetBool(Grounded, _isGrounded);
+            case GameplayPhases.StartingPhase:
+                break;
+            case GameplayPhases.RacingPhase:
+                _isGrounded = IsGrounded();
+                if (!_isRagdoll)
+                {
+                    Rotate();
+                    _anim.SetBool(Grounded, _isGrounded);
+                }
+                break;
+            case GameplayPhases.PaintingPhase:
+                if (!_inControl) return;
+                if (_joystick.Direction != Vector2.zero)
+                {
+                    var desiredTransform = _paintingSphere.position;
+                    desiredTransform.x += _joystick.Horizontal * paintingCursorSpeed * Time.deltaTime;
+                    desiredTransform.y += _joystick.Vertical * paintingCursorSpeed* Time.deltaTime;
+                    //clamp values to prevent going out of bounds
+                    _paintingSphere.position = desiredTransform;
+                }
+                break;
+            default:
+                throw new ArgumentOutOfRangeException();
         }
     }
 
     private void FixedUpdate()
     {
-        if (_inControl && !_isRagdoll && !IsStanding && _isGrounded)
+        switch (currentPhase)
         {
-            Move();   
-        }
-        else if (_isRagdoll)
-        {
-            //transform.position = hipsTransform.position;
+            case GameplayPhases.StartingPhase:
+                break;
+            case GameplayPhases.RacingPhase:
+                if (_inControl && !_isRagdoll && !IsStanding && _isGrounded)
+                {
+                    Move();   
+                }
+                break;
+            case GameplayPhases.PaintingPhase:
+                break;
+            default:
+                throw new ArgumentOutOfRangeException();
         }
     }
 
@@ -153,6 +187,42 @@ public class PlayerController : MonoBehaviour, IRunner
         var groundCheck = Physics.SphereCast(lowerSphere, _capsuleCollider.radius - Physics.defaultContactOffset,
             -transform.up, out _, groundCheckDistance, LayerMask.GetMask("Platform","Obstacle"));
         return groundCheck;
+    }
+
+    public void SwitchPhase(GameplayPhases newPhase)
+    {
+        switch (newPhase)
+        {
+            case GameplayPhases.StartingPhase:
+                currentPhase = newPhase;
+                break;
+            case GameplayPhases.RacingPhase:
+                currentPhase = newPhase;
+                break;
+            case GameplayPhases.PaintingPhase:
+                _inControl = false;
+                currentPhase = newPhase;
+                _anim.SetBool(IsRunning, true);
+                GameManager.Instance.thirdPersonCamera.m_Priority = 1;
+
+                var paintingPosition = GameManager.Instance.paintingTransform.position;
+                var toPaintingPosition = paintingPosition - transform.position;
+                toPaintingPosition.y = 0;
+                var rot = Quaternion.LookRotation(toPaintingPosition);
+                var paintingSequence = DOTween.Sequence();
+                paintingSequence.Append(transform.DORotateQuaternion(rot, 0.1f))
+                    .Insert(0, transform.DOMove(paintingPosition, 0.5f)).OnComplete(() =>
+                    {
+                        transform.DORotate(Vector3.zero, 0.1f).SetEase(Ease.Linear);
+                        GameManager.Instance.PaintingPanelActivator();
+                        _anim.SetTrigger(Paint);
+                        _paintingSphere.gameObject.SetActive(true);
+                        _inControl = true;
+                    });
+                break;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(newPhase), newPhase, null);
+        }
     }
 
     #region Collision / Trigger Methods
@@ -289,6 +359,7 @@ public class PlayerController : MonoBehaviour, IRunner
         IsStanding = false;
         _anim.enabled = true;
         _rb.isKinematic = false;
+        GameManager.Instance.thirdPersonCamera.m_Follow = transform;
         _capsuleCollider.enabled = true;
         foreach (var rb in _rigidbodiesList)
         {

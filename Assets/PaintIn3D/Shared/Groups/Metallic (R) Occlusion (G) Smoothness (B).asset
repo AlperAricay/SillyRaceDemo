@@ -35,19 +35,12 @@ MonoBehaviour:
       Texture: {fileID: 0}
       Kernel: 1
       Channels: {x: 0, y: 0, z: 1, w: 0}
-  shaderData: '_MetallicGlossMap@Paint in 3D/P3D Solid Height
+  shaderData: '_MetallicGlossMap@Paint in 3D/Solid Height
 
     _MetallicGlossMap@Paint
-    in 3D/P3D Solid
+    in 3D/Solid
 
-    _MetallicGlossMap@Shader Graphs/P3D Overlay SRP
+    _MetallicGlossMap@Paint in 3D/Alpha
 
     _MetallicGlossMap@Paint
-    in 3D/P3D Alpha
-
-    _MetallicGlossMap@Paint in 3D/P3D Overlay
-
-    _MetallicGlossMap@Shader
-    Graphs/P3D Solid SRP
-
-    _MetallicGlossMap@Shader Graphs/P3D Alpha SRP'
+    in 3D/Overlay'

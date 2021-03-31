@@ -1,12 +1,12 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
 
-namespace PaintIn3D.Examples
+namespace PaintIn3D
 {
 	/// <summary>This component will search the specified paintable texture for pixel colors matching an active and enabled P3dColor.</summary>
 	[ExecuteInEditMode]
 	[HelpURL(P3dHelper.HelpUrlPrefix + "P3dColorCounter")]
-	[AddComponentMenu(P3dHelper.ComponentMenuPrefix + "Examples/Color Counter")]
+	[AddComponentMenu(P3dHelper.ComponentMenuPrefix + "Color Counter")]
 	public class P3dColorCounter : P3dPaintableTextureMonitorMask
 	{
 		public class Contribution
@@ -23,7 +23,7 @@ namespace PaintIn3D.Examples
 		}
 
 		/// <summary>This stores all active and enabled instances.</summary>
-		public static LinkedList<P3dColorCounter> Instances = new LinkedList<P3dColorCounter>(); private LinkedListNode<P3dColorCounter> node;
+		public static LinkedList<P3dColorCounter> Instances = new LinkedList<P3dColorCounter>(); private LinkedListNode<P3dColorCounter> instancesNode;
 
 		/// <summary>The RGBA values must be within this range of a color for it to be counted.</summary>
 		public float Threshold { set { threshold = value; } get { return threshold; } } [Range(0.0f, 1.0f)] [SerializeField] private float threshold = 0.1f;
@@ -75,16 +75,16 @@ namespace PaintIn3D.Examples
 
 		protected override void OnEnable()
 		{
-			base.OnEnable();
+			instancesNode = Instances.AddLast(this);
 
-			node = Instances.AddLast(this);
+			base.OnEnable();
 		}
 
 		protected override void OnDisable()
 		{
-			base.OnDisable();
+			Instances.Remove(instancesNode); instancesNode = null;
 
-			Instances.Remove(node); node = null;
+			base.OnDisable();
 
 			Contribute(0);
 		}
@@ -112,7 +112,7 @@ namespace PaintIn3D.Examples
 					var bestIndex    = -1;
 					var bestDistance = (int)threshold32;
 
-					for (var c = 0; c < P3dColor.InstanceCount; c++)
+					for (var c = 0; c < P3dColor.Instances.Count; c++)
 					{
 						var tempColor = contributions[c];
 						var distance  = 0;
@@ -158,9 +158,7 @@ namespace PaintIn3D.Examples
 		{
 			ClearContributions();
 
-			var color = P3dColor.FirstInstance;
-
-			for (var i = 0; i < P3dColor.InstanceCount; i++)
+			foreach (var color in P3dColor.Instances)
 			{
 				var contribution = Contribution.Pool.Count > 0 ? Contribution.Pool.Pop() : new Contribution();
 				var color32      = (Color32)color.Color;
@@ -173,8 +171,6 @@ namespace PaintIn3D.Examples
 				contribution.A     = color32.a;
 
 				contributions.Add(contribution);
-
-				color = color.NextInstance;
 			}
 
 			total = 0;
@@ -208,15 +204,18 @@ namespace PaintIn3D.Examples
 }
 
 #if UNITY_EDITOR
-namespace PaintIn3D.Examples
+namespace PaintIn3D
 {
 	using UnityEditor;
+	using TARGET = P3dColorCounter;
 
-	[CustomEditor(typeof(P3dColorCounter))]
-	public class P3dColorCounter_Editor : P3dPaintableTextureMonitorMask_Editor<P3dColorCounter>
+	[CustomEditor(typeof(TARGET))]
+	public class P3dColorCounter_Editor : P3dPaintableTextureMonitorMask_Editor
 	{
 		protected override void OnInspector()
 		{
+			TARGET tgt; TARGET[] tgts; GetTargets(out tgt, out tgts);
+
 			base.OnInspector();
 
 			Draw("threshold", "The RGBA values must be within this range of a color for it to be counted.");
@@ -224,11 +223,11 @@ namespace PaintIn3D.Examples
 			Separator();
 
 			BeginDisabled();
-				EditorGUILayout.IntField("Total", Target.Total);
+				EditorGUILayout.IntField("Total", tgt.Total);
 
-				for (var i = 0; i < Target.Contributions.Count; i++)
+				for (var i = 0; i < tgt.Contributions.Count; i++)
 				{
-					var contribution = Target.Contributions[i];
+					var contribution = tgt.Contributions[i];
 					var rect         = P3dHelper.Reserve();
 					var rectL        = rect; rectL.xMax -= (rect.width - EditorGUIUtility.labelWidth) / 2 + 1;
 					var rectR        = rect; rectR.xMin = rectL.xMax + 2;

@@ -26,10 +26,10 @@ namespace PaintIn3D
 		/// NOTE: This number should be unique, and not shared by any other <b>P3dGroupData</b>.</summary>
 		public int Index { set { index = value; } get { return index; } } [SerializeField] private int index;
 
-		/// <summary>This allows you to specify the way each channel of this group's pixels are mapped to textures. This is mainly used by the in-editor painting mateiral builder tool.</summary>
+		/// <summary>This allows you to specify the way each channel of this group's pixels are mapped to textures. This is mainly used by the in-editor painting material builder tool.</summary>
 		public List<TextureData> TextureDatas { get { if (textureDatas == null) textureDatas = new List<TextureData>(); return textureDatas; } } [SerializeField] private List<TextureData> textureDatas;
 
-		/// <summary>This allows you to specify which shaders and their proprties are associated with this group.</summary>
+		/// <summary>This allows you to specify which shaders and their properties are associated with this group.</summary>
 		public string ShaderData { set { shaderData = value; } get { return shaderData; } } [SerializeField] [Multiline(10)] private string shaderData;
 
 		private List<Entry> entries = new List<Entry>();
@@ -89,10 +89,11 @@ namespace PaintIn3D
 namespace PaintIn3D
 {
 	using UnityEditor;
+	using TARGET = P3dGroupData;
 
 	[CanEditMultipleObjects]
-	[CustomEditor(typeof(P3dGroupData))]
-	public class P3dGroupData_Editor : P3dEditor<P3dGroupData>
+	[CustomEditor(typeof(TARGET))]
+	public class P3dGroupData_Editor : P3dEditor
 	{
 		class Entry
 		{
@@ -171,11 +172,11 @@ namespace PaintIn3D
 			UpdateCachedInstances();
 		}
 
-		private void CheckForDuplicates()
+		private void CheckForDuplicates(TARGET tgt)
 		{
-			if (Target.ShaderData != null)
+			if (tgt.ShaderData != null)
 			{
-				var lines = Target.ShaderData.Split(new char[] { '\n', '\r' }, System.StringSplitOptions.RemoveEmptyEntries);
+				var lines = tgt.ShaderData.Split(new char[] { '\n', '\r' }, System.StringSplitOptions.RemoveEmptyEntries);
 
 				uniques.Clear();
 
@@ -189,7 +190,7 @@ namespace PaintIn3D
 
 						if (uniques.Add(right) == false)
 						{
-							EditorGUILayout.HelpBox("There are multiple entries for " + right, MessageType.Error);
+							Error("There are multiple entries for " + right);
 						}
 					}
 				}
@@ -198,15 +199,17 @@ namespace PaintIn3D
 
 		protected override void OnInspector()
 		{
-			var clashes = CachedInstances.Where(d => d.Index == Target.Index);
+			TARGET tgt; TARGET[] tgts; GetTargets(out tgt, out tgts);
+
+			var clashes = CachedInstances.Where(d => d.Index == tgt.Index);
 
 			BeginError(clashes.Count() > 1);
-				Draw("index", "This allows you to set the ID of this group (e.g. 100).\n\nNOTE: This number should be unique, and not shared by any other <b>P3dGroupData</b>.");
+				Draw("index", "This allows you to set the ID of this group (e.g. 100).\n\nNOTE: This number should be unique, and not shared by any other P3dGroupData.");
 			EndError();
-			Draw("textureDatas", "This allows you to specify the way each channel of this group's pixels are mapped to textures. This is mainly used by the in-editor painting mateiral builder tool.");
-			Draw("shaderData", "This allows you to specify which shaders and their proprties are associated with this group.");
+			Draw("textureDatas", "This allows you to specify the way each channel of this group's pixels are mapped to textures. This is mainly used by the in-editor painting material builder tool.");
+			Draw("shaderData", "This allows you to specify which shaders and their properties are associated with this group.");
 
-			CheckForDuplicates();
+			CheckForDuplicates(tgt);
 
 			Separator();
 

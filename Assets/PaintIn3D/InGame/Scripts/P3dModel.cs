@@ -9,13 +9,24 @@ namespace PaintIn3D
 	[RequireComponent(typeof(Renderer))]
 	[HelpURL(P3dHelper.HelpUrlPrefix + "P3dModel")]
 	[AddComponentMenu(P3dHelper.ComponentMenuPrefix + "Model")]
-	public class P3dModel : P3dLinkedBehaviour<P3dModel>
+	public class P3dModel : MonoBehaviour
 	{
+		public enum UseMeshType
+		{
+			AsIs,
+			AutoSeamFix
+		}
+
 		/// <summary>The paintable this separate paintable is associated with.</summary>
 		public virtual P3dPaintable Paintable { set { paintable = value; } get { return paintable; } } [SerializeField] protected P3dPaintable paintable;
 
 		/// <summary>Transform the mesh with its position, rotation, and scale? Some skinned mesh setups require this to be disabled.</summary>
 		public virtual bool IncludeScale { set { includeScale = value; } get { return includeScale; } } [SerializeField] protected bool includeScale = true;
+
+		/// <summary>This allows you to choose how the <b>Mesh</b> attached to the current <b>Renderer</b> is used when painting.
+		/// AsIs = Use what is currently set in the renderer.
+		/// AutoSeamFix = Use (or automatically generate) a seam-fixed version of the mesh currently set in the renderer.</summary>
+		public UseMeshType UseMesh { set { useMesh = value; } get { return useMesh; } } [SerializeField] protected UseMeshType useMesh;
 
 		[System.NonSerialized]
 		private Renderer cachedRenderer;
@@ -74,6 +85,9 @@ namespace PaintIn3D
 		[System.NonSerialized]
 		private static List<P3dModel> tempModels = new List<P3dModel>();
 
+		/// <summary>This stores all active and enabled instances in the open scenes.</summary>
+		public static LinkedList<P3dModel> Instances { get { return instances; } } private static LinkedList<P3dModel> instances = new LinkedList<P3dModel>(); private LinkedListNode<P3dModel> instancesNode;
+
 		public bool Prepared
 		{
 			set
@@ -84,6 +98,14 @@ namespace PaintIn3D
 			get
 			{
 				return prepared;
+			}
+		}
+
+		public Mesh PreparedMesh
+		{
+			get
+			{
+				return preparedMesh;
 			}
 		}
 
@@ -178,27 +200,23 @@ namespace PaintIn3D
 		{
 			tempModels.Clear();
 
-			var model = FirstInstance;
-
-			for (var i = 0; i < InstanceCount; i++)
+			foreach (var instance in instances)
 			{
-				if (P3dHelper.IndexInMask(model.CachedGameObject.layer, layerMask) == true && model.Paintable != null)
+				if (P3dHelper.IndexInMask(instance.CachedGameObject.layer, layerMask) == true && instance.Paintable != null)
 				{
-					var bounds    = model.CachedRenderer.bounds;
+					var bounds    = instance.CachedRenderer.bounds;
 					var sqrRadius = radius + bounds.extents.magnitude; sqrRadius *= sqrRadius;
 
 					if (Vector3.SqrMagnitude(position - bounds.center) < sqrRadius)
 					{
-						tempModels.Add(model);
+						tempModels.Add(instance);
 
-						if (model.paintable.Activated == false)
+						if (instance.paintable.Activated == false)
 						{
-							model.paintable.Activate();
+							instance.paintable.Activate();
 						}
 					}
 				}
-
-				model = model.NextInstance;
 			}
 
 			return tempModels;
@@ -257,7 +275,7 @@ namespace PaintIn3D
 			return Paintable.GetMaterialIndex(material);
 		}
 
-		public void GetPrepared(ref Mesh mesh, ref Matrix4x4 matrix)
+		public void GetPrepared(ref Mesh mesh, ref Matrix4x4 matrix, P3dCoord coord)
 		{
 			if (prepared == false)
 			{
@@ -297,6 +315,11 @@ namespace PaintIn3D
 				{
 					preparedMesh   = cachedFilter.sharedMesh;
 					preparedMatrix = cachedRenderer.localToWorldMatrix;
+
+					if (useMesh == UseMeshType.AutoSeamFix)
+					{
+						preparedMesh = P3dSeamFixer.GetCachedMesh(preparedMesh, coord);
+					}
 				}
 			}
 
@@ -304,12 +327,17 @@ namespace PaintIn3D
 			matrix = preparedMatrix;
 		}
 
-		protected override void OnEnable()
+		protected virtual void OnEnable()
 		{
-			base.OnEnable();
+			instancesNode = instances.AddLast(this);
 
 			cachedGameObject = gameObject;
 			cachedTransform  = transform;
+		}
+
+		protected virtual void OnDisable()
+		{
+			instances.Remove(instancesNode); instancesNode = null;
 		}
 
 		protected virtual void OnDestroy()
@@ -323,23 +351,34 @@ namespace PaintIn3D
 namespace PaintIn3D
 {
 	using UnityEditor;
+	using TARGET = P3dModel;
 
 	[CanEditMultipleObjects]
-	[CustomEditor(typeof(P3dModel))]
-	public class P3dModel_Editor : P3dEditor<P3dModel>
+	[CustomEditor(typeof(TARGET))]
+	public class P3dModel_Editor : P3dEditor
 	{
 		protected override void OnInspector()
 		{
-			BeginError(Any(t => t.Paintable == null));
+			TARGET tgt; TARGET[] tgts; GetTargets(out tgt, out tgts);
+
+			BeginError(Any(tgts, t => t.Paintable == null));
 				Draw("paintable", "The paintable this separate paintable is associated with.");
 			EndError();
 			Draw("includeScale", "Transform the mesh with its position, rotation, and scale? Some skinned mesh setups require this to be disabled.");
+			Draw("useMesh", "This allows you to choose how the Mesh attached to the current Renderer is used when painting.\n\nAsIs = Use what is currently set in the renderer.\n\nAutoSeamFix = Use (or automatically generate) a seam-fixed version of the mesh currently set in the renderer.");
 
 			Separator();
 
 			if (Button("Analyze Mesh") == true)
 			{
-				P3dMeshAnalysis.OpenWith(Target.gameObject);
+				if (tgt.Prepared == true)
+				{
+					P3dMeshAnalysis.OpenWith(tgt.PreparedMesh);
+				}
+				else
+				{
+					P3dMeshAnalysis.OpenWith(tgt.gameObject);
+				}
 			}
 		}
 	}

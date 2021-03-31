@@ -7,16 +7,12 @@
 		{
 			get
 			{
-				var paintableTexture = P3dPaintableTexture.FirstInstance;
-
-				for (var i = 0; i < P3dPaintableTexture.InstanceCount; i++)
+				foreach (var paintableTexture in P3dPaintableTexture.Instances)
 				{
 					if (paintableTexture.CanUndo == true)
 					{
 						return true;
 					}
-
-					paintableTexture = paintableTexture.NextInstance;
 				}
 
 				return false;
@@ -27,16 +23,12 @@
 		{
 			get
 			{
-				var paintableTexture = P3dPaintableTexture.FirstInstance;
-
-				for (var i = 0; i < P3dPaintableTexture.InstanceCount; i++)
+				foreach (var paintableTexture in P3dPaintableTexture.Instances)
 				{
 					if (paintableTexture.CanRedo == true)
 					{
 						return true;
 					}
-
-					paintableTexture = paintableTexture.NextInstance;
 				}
 
 				return false;
@@ -46,52 +38,36 @@
 		/// <summary>This method will call StoreState on all active and enabled P3dPaintableTextures.</summary>
 		public static void StoreAllStates()
 		{
-			var paintableTexture = P3dPaintableTexture.FirstInstance;
-
-			for (var i = 0; i < P3dPaintableTexture.InstanceCount; i++)
+			foreach (var paintableTexture in P3dPaintableTexture.Instances)
 			{
 				paintableTexture.StoreState();
-
-				paintableTexture = paintableTexture.NextInstance;
 			}
 		}
 
 		/// <summary>This method will call StoreState on all active and enabled P3dPaintableTextures.</summary>
 		public static void ClearAllStates()
 		{
-			var paintableTexture = P3dPaintableTexture.FirstInstance;
-
-			for (var i = 0; i < P3dPaintableTexture.InstanceCount; i++)
+			foreach (var paintableTexture in P3dPaintableTexture.Instances)
 			{
 				paintableTexture.ClearStates();
-
-				paintableTexture = paintableTexture.NextInstance;
 			}
 		}
 
 		/// <summary>This method will call Undo on all active and enabled P3dPaintableTextures.</summary>
 		public static void UndoAll()
 		{
-			var paintableTexture = P3dPaintableTexture.FirstInstance;
-
-			for (var i = 0; i < P3dPaintableTexture.InstanceCount; i++)
+			foreach (var paintableTexture in P3dPaintableTexture.Instances)
 			{
 				paintableTexture.Undo();
-
-				paintableTexture = paintableTexture.NextInstance;
 			}
 		}
 
 		/// <summary>This method will call Redo on all active and enabled P3dPaintableTextures.</summary>
 		public static void RedoAll()
 		{
-			var paintableTexture = P3dPaintableTexture.FirstInstance;
-
-			for (var i = 0; i < P3dPaintableTexture.InstanceCount; i++)
+			foreach (var paintableTexture in P3dPaintableTexture.Instances)
 			{
 				paintableTexture.Redo();
-
-				paintableTexture = paintableTexture.NextInstance;
 			}
 		}
 	}

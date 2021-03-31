@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using System.Collections.Generic;
 using FSA = UnityEngine.Serialization.FormerlySerializedAsAttribute;
 
 namespace PaintIn3D
@@ -6,8 +7,8 @@ namespace PaintIn3D
 	/// <summary>This component allows you to block paint from being applied at the current position using the specified shape.</summary>
 	[ExecuteInEditMode]
 	[HelpURL(P3dHelper.HelpUrlPrefix + "P3dMask")]
-	[AddComponentMenu(P3dHelper.ComponentMenuPrefix + "Examples/Mask")]
-	public class P3dMask : P3dLinkedBehaviour<P3dMask>
+	[AddComponentMenu(P3dHelper.ComponentMenuPrefix + "Mask")]
+	public class P3dMask : MonoBehaviour
 	{
 		/// <summary>The mask will use this texture shape.</summary>
 		public Texture Texture { set { texture = value; } get { return texture; } } [FSA("shape")] [SerializeField] private Texture texture;
@@ -20,6 +21,9 @@ namespace PaintIn3D
 		/// 2 = Double size.</summary>
 		public Vector2 Stretch { set { stretch = value; } get { return stretch; } } [SerializeField] private Vector2 stretch = Vector2.one;
 
+		/// <summary>This stores all active and enabled instances in the open scenes.</summary>
+		public static LinkedList<P3dMask> Instances { get { return instances; } } private static LinkedList<P3dMask> instances = new LinkedList<P3dMask>(); private LinkedListNode<P3dMask> instancesNode;
+
 		public Matrix4x4 Matrix
 		{
 			get
@@ -30,26 +34,33 @@ namespace PaintIn3D
 
 		public static P3dMask Find(Vector3 position, LayerMask layers)
 		{
-			var mask         = FirstInstance;
 			var bestMask     = default(P3dMask);
 			var bestDistance = float.PositiveInfinity;
 
-			for (var i = 0; i < InstanceCount; i++)
+			foreach (var instance in instances)
 			{
-				if (P3dHelper.IndexInMask(mask.gameObject.layer, layers) == true)
+				if (P3dHelper.IndexInMask(instance.gameObject.layer, layers) == true)
 				{
-					var distance = Vector3.SqrMagnitude(position - mask.transform.position);
+					var distance = Vector3.SqrMagnitude(position - instance.transform.position);
 
 					if (distance < bestDistance)
 					{
-						bestMask = mask;
+						bestMask = instance;
 					}
 				}
-
-				mask = mask.NextInstance;
 			}
 
 			return bestMask;
+		}
+
+		protected virtual void OnEnable()
+		{
+			instancesNode = instances.AddLast(this);
+		}
+
+		protected virtual void OnDisable()
+		{
+			instances.Remove(instancesNode); instancesNode = null;
 		}
 
 #if UNITY_EDITOR
@@ -70,14 +81,17 @@ namespace PaintIn3D
 namespace PaintIn3D
 {
 	using UnityEditor;
+	using TARGET = P3dMask;
 
 	[CanEditMultipleObjects]
-	[CustomEditor(typeof(P3dMask))]
-	public class P3dMask_Editor : P3dEditor<P3dMask>
+	[CustomEditor(typeof(TARGET))]
+	public class P3dMask_Editor : P3dEditor
 	{
 		protected override void OnInspector()
 		{
-			BeginError(Any(t => t.Texture == null));
+			TARGET tgt; TARGET[] tgts; GetTargets(out tgt, out tgts);
+
+			BeginError(Any(tgts, t => t.Texture == null));
 				Draw("texture", "The mask will use this texture shape.");
 			EndError();
 			Draw("channel", "The mask will use pixels from this texture channel.");

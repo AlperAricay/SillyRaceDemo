@@ -38,6 +38,24 @@
             <e p="readme.txt" t="Include" />
           </e>
         </e>
+        <e p="Epic Toon FX" t="Include">
+          <e p="Prefabs" t="Include">
+            <e p="Combat" t="Include">
+              <e p="Combat FX.txt" t="Include" />
+            </e>
+            <e p="Environment" t="Include">
+              <e p="Environment FX.txt" t="Include" />
+            </e>
+            <e p="Interactive" t="Include">
+              <e p="Interactive FX.txt" t="Include" />
+            </e>
+          </e>
+          <e p="Scripts" t="Include">
+            <e p="ETFXLightFade.cs" t="Include" />
+            <e p="ETFXPitchRandomizer.cs" t="Include" />
+            <e p="ETFXRotation.cs" t="Include" />
+          </e>
+        </e>
         <e p="Joystick Pack" t="Include">
           <e p="Scripts" t="Include">
             <e p="Base" t="Include">
@@ -84,8 +102,6 @@
               <e p="P3dCloneMirror.cs" t="Include" />
               <e p="P3dColor.cs" t="Include" />
               <e p="P3dColorCounter.cs" t="Include" />
-              <e p="P3dConnectableLines.cs" t="Include" />
-              <e p="P3dConnectablePoints.cs" t="Include" />
               <e p="P3dGraduallyFade.cs" t="Include" />
               <e p="P3dHitBetween.cs" t="Include" />
               <e p="P3dHitCache.cs" t="Include" />
@@ -93,8 +109,12 @@
               <e p="P3dHitNearby.cs" t="Include" />
               <e p="P3dHitParticles.cs" t="Include" />
               <e p="P3dHitScreen.cs" t="Include" />
+              <e p="P3dHitScreenBase.cs" t="Include" />
+              <e p="P3dHitScreenFill.cs" t="Include" />
+              <e p="P3dHitScreenLine.cs" t="Include" />
               <e p="P3dHitThrough.cs" t="Include" />
               <e p="P3dInputManager.cs" t="Include" />
+              <e p="P3dLineConnector.cs" t="Include" />
               <e p="P3dMask.cs" t="Include" />
               <e p="P3dMaterialCloner.cs" t="Include" />
               <e p="P3dModel.cs" t="Include" />
@@ -109,6 +129,7 @@
               <e p="P3dPaintReplace.cs" t="Include" />
               <e p="P3dPaintReplaceChannels.cs" t="Include" />
               <e p="P3dPaintSphere.cs" t="Include" />
+              <e p="P3dPointConnector.cs" t="Include" />
               <e p="P3dReadColor.cs" t="Include" />
               <e p="P3dSlot.cs" t="Include" />
               <e p="P3dStateManager.cs" t="Include" />
@@ -133,7 +154,6 @@
               <e p="P3D Sphere.shader" t="Include" />
               <e p="P3D Texture.shader" t="Include" />
               <e p="P3D White.shader" t="Include" />
-              <e p="P3dRenderingPipeline.txt" t="Include" />
             </e>
             <e p="Scripts" t="Include">
               <e p="IClone.cs" t="Include" />
@@ -162,7 +182,6 @@
               <e p="P3dHelper.cs" t="Include" />
               <e p="P3dHelper_Editor.cs" t="Include" />
               <e p="P3dHit.cs" t="Include" />
-              <e p="P3dLinkedBehaviour.cs" t="Include" />
               <e p="P3dMeshAnalysis.cs" t="Include" />
               <e p="P3dMeshCache.cs" t="Include" />
               <e p="P3dModifier.cs" t="Include" />
@@ -179,9 +198,9 @@
               <e p="P3dModifyTexturePressure.cs" t="Include" />
               <e p="P3dModifyTextureRandom.cs" t="Include" />
               <e p="P3dReader.cs" t="Include" />
-              <e p="P3dRenderingPipeline.cs" t="Include" />
               <e p="P3dSeamFixer.cs" t="Include" />
               <e p="P3dShader.cs" t="Include" />
+              <e p="ShaderBundle.cs" t="Include" />
             </e>
           </e>
         </e>
@@ -197,11 +216,14 @@
           <e p="Jumper.cs" t="Include" />
           <e p="KillerCollider.cs" t="Include" />
           <e p="OpponentController.cs" t="Include" />
+          <e p="P3dChangeCounterText.cs" t="Include" />
           <e p="PlayerController.cs" t="Include" />
           <e p="RotatingPlatform.cs" t="Include" />
+          <e p="StateMachineBehaviour" t="Include">
+            <e p="StandBehaviour.cs" t="Include" />
+          </e>
           <e p="TosserCollider.cs" t="Include" />
         </e>
-        <e p="StandBehaviour.cs" t="Include" />
       </e>
       <e p="obj" t="ExcludeRecursive" />
       <e p="Packages" t="ExcludeRecursive" />

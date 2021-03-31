@@ -4,7 +4,7 @@ namespace PaintIn3D
 {
 	/// <summary>This allows you to paint a decal at a hit point. Hit points will automatically be sent by any <b>P3dHit___</b> component on this GameObject, or its ancestors.</summary>
 	[HelpURL(P3dHelper.HelpUrlPrefix + "P3dPaintDecal")]
-	[AddComponentMenu(P3dHelper.ComponentMenuPrefix + "Paint/Paint Decal")]
+	[AddComponentMenu(P3dHelper.ComponentHitMenuPrefix + "Paint Decal")]
 	public class P3dPaintDecal : MonoBehaviour, IHit, IHitPoint, IHitLine, IHitTriangle, IHitQuad, IHitCoord
 	{
 		/// <summary>Only the P3dModel/P3dPaintable GameObjects whose layers are within this mask will be eligible for painting.</summary>
@@ -19,8 +19,8 @@ namespace PaintIn3D
 		/// <summary>If this is set, then only the specified P3dPaintableTexture will be painted, regardless of the layer or group setting.</summary>
 		public P3dPaintableTexture TargetTexture { set { targetTexture = value; } get { return targetTexture; } } [SerializeField] private P3dPaintableTexture targetTexture;
 
-		/// <summary>This component will paint using this blending mode.
-		/// NOTE: See <b>P3dBlendMode</b> documentation for more information.</summary>
+		/// <summary>This allows you to choose how the paint from this component will combine with the existing pixels of the textures you paint.
+		/// NOTE: See the <b>Blend Mode</b> section of the documentation for more information.</summary>
 		public P3dBlendMode BlendMode { set { blendMode = value; } get { return blendMode; } } [SerializeField] private P3dBlendMode blendMode = P3dBlendMode.AlphaBlend(Vector4.one);
 
 		/// <summary>The decal that will be painted.</summary>
@@ -289,41 +289,29 @@ namespace PaintIn3D
 namespace PaintIn3D
 {
 	using UnityEditor;
+	using TARGET = P3dPaintDecal;
 
 	[CanEditMultipleObjects]
-	[CustomEditor(typeof(P3dPaintDecal))]
-	public class P3dPaintDecal_Editor : P3dEditor<P3dPaintDecal>
+	[CustomEditor(typeof(TARGET))]
+	public class P3dPaintDecal_Editor : P3dEditor
 	{
-		private bool expandLayers;
-		private bool expandGroups;
-
 		protected override void OnInspector()
 		{
-			BeginError(Any(t => t.Layers == 0 && t.TargetModel == null));
-				DrawExpand(ref expandLayers, "layers", "Only the P3dModel/P3dPaintable GameObjects whose layers are within this mask will be eligible for painting.");
+			TARGET tgt; TARGET[] tgts; GetTargets(out tgt, out tgts);
+
+			BeginError(Any(tgts, t => t.Layers == 0 && t.TargetModel == null));
+				Draw("layers", "Only the P3dModel/P3dPaintable GameObjects whose layers are within this mask will be eligible for painting.");
 			EndError();
-			if (expandLayers == true || Any(t => t.TargetModel != null))
-			{
-				BeginIndent();
-					Draw("targetModel", "If this is set, then only the specified P3dModel/P3dPaintable will be painted, regardless of the layer setting.");
-				EndIndent();
-			}
-			DrawExpand(ref expandGroups, "group", "Only the P3dPaintableTexture components with a matching group will be painted by this component.");
-			if (expandGroups == true || Any(t => t.TargetTexture != null))
-			{
-				BeginIndent();
-					Draw("targetTexture", "If this is set, then only the specified P3dPaintableTexture will be painted, regardless of the layer or group setting.");
-				EndIndent();
-			}
+			Draw("group", "Only the P3dPaintableTexture components with a matching group will be painted by this component.");
 
 			Separator();
 
-			Draw("blendMode", "This component will paint using this blending mode.\n\nNOTE: See P3dBlendMode documentation for more information.");
-			BeginError(Any(t => t.Texture == null && t.Shape == null));
+			Draw("blendMode", "This allows you to choose how the paint from this component will combine with the existing pixels of the textures you paint.\n\nNOTE: See the Blend Mode section of the documentation for more information.");
+			BeginError(Any(tgts, t => t.Texture == null && t.Shape == null));
 				Draw("texture", "The decal that will be painted.");
 			EndError();
 			EditorGUILayout.BeginHorizontal();
-				BeginError(Any(t => t.BlendMode.Index == P3dBlendMode.REPLACE && t.Shape == null));
+				BeginError(Any(tgts, t => t.BlendMode.Index == P3dBlendMode.REPLACE && t.Shape == null));
 					Draw("shape", "This allows you to specify the shape of the decal. This is optional for most blending modes, because they usually derive their shape from the RGB or A values. However, if you're using the Replace blending mode, then you must manually specify the shape.");
 				EndError();
 				EditorGUILayout.PropertyField(serializedObject.FindProperty("shapeChannel"), GUIContent.none, GUILayout.Width(50));
@@ -335,30 +323,40 @@ namespace PaintIn3D
 
 			Draw("angle", "The angle of the decal in degrees.");
 			Draw("scale", "This allows you to control the mirroring and aspect ratio of the decal.\n\n1, 1 = No scaling.\n-1, 1 = Horizontal Flip.");
-			BeginError(Any(t => t.Radius <= 0.0f));
+			BeginError(Any(tgts, t => t.Radius <= 0.0f));
 				Draw("radius", "The radius of the paint brush.");
 			EndError();
-			BeginError(Any(t => t.Hardness <= 0.0f));
+			BeginError(Any(tgts, t => t.Hardness <= 0.0f));
 				Draw("hardness", "This allows you to control the sharpness of the near+far depth cut-off point.");
 			EndError();
 			Draw("wrapping", "This allows you to control how much the decal can wrap around uneven paint surfaces.");
 
 			Separator();
 
-			Draw("normalFront", "This allows you to control how much the paint can wrap around the front of surfaces (e.g. if you want paint to wrap around curved surfaces then set this to a higher value).\n\nNOTE: If you set this to 0 then paint will not be applied to front facing surfaces.");
-			Draw("normalBack", "This works just like Normal Front, except for back facing surfaces.\n\nNOTE: If you set this to 0 then paint will not be applied to back facing surfaces.");
-			Draw("normalFade", "This allows you to control the smoothness of the depth cut-off point.");
+			if (DrawFoldout("Advanced", "Show advanced settings?") == true)
+			{
+				BeginIndent();
+					Draw("targetModel", "If this is set, then only the specified P3dModel/P3dPaintable will be painted, regardless of the layer setting.");
+					Draw("targetTexture", "If this is set, then only the specified P3dPaintableTexture will be painted, regardless of the layer or group setting.");
+
+					Separator();
+
+					Draw("normalFront", "This allows you to control how much the paint can wrap around the front of surfaces (e.g. if you want paint to wrap around curved surfaces then set this to a higher value).\n\nNOTE: If you set this to 0 then paint will not be applied to front facing surfaces.");
+					Draw("normalBack", "This works just like Normal Front, except for back facing surfaces.\n\nNOTE: If you set this to 0 then paint will not be applied to back facing surfaces.");
+					Draw("normalFade", "This allows you to control the smoothness of the depth cut-off point.");
+
+					Separator();
+
+					Draw("tileTexture", "This allows you to apply a tiled detail texture to your decals. This tiling will be applied in world space using triplanar mapping.");
+					Draw("tileTransform", "This allows you to adjust the tiling position + rotation + scale using a Transform.");
+					Draw("tileOpacity", "This allows you to control the triplanar influence.\n\n0 = No influence.\n\n1 = Full influence.");
+					Draw("tileTransition", "This allows you to control how quickly the triplanar mapping transitions between the X/Y/Z planes.");
+				EndIndent();
+			}
 
 			Separator();
 
-			Draw("tileTexture", "This allows you to apply a tiled detail texture to your decals. This tiling will be applied in world space using triplanar mapping.");
-			Draw("tileTransform", "This allows you to adjust the tiling position + rotation + scale using a Transform.");
-			Draw("tileOpacity", "This allows you to control the triplanar influence.\n\n0 = No influence.\n\n1 = Full influence.");
-			Draw("tileTransition", "This allows you to control how quickly the triplanar mapping transitions between the X/Y/Z planes.");
-
-			Separator();
-
-			Target.Modifiers.DrawEditorLayout(serializedObject, target, "Color", "Angle", "Opacity", "Radius", "Hardness", "Texture", "Position");
+			tgt.Modifiers.DrawEditorLayout(serializedObject, target, "Color", "Angle", "Opacity", "Radius", "Hardness", "Texture", "Position");
 		}
 	}
 }

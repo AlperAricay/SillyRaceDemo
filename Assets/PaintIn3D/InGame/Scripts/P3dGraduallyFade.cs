@@ -1,10 +1,10 @@
 ﻿using UnityEngine;
 
-namespace PaintIn3D.Examples
+namespace PaintIn3D
 {
 	/// <summary>This component allows you to fade the pixels of the specified P3dPaintableTexture.</summary>
 	[HelpURL(P3dHelper.HelpUrlPrefix + "P3dGraduallyFade")]
-	[AddComponentMenu(P3dHelper.ComponentMenuPrefix + "Examples/Gradually Fade")]
+	[AddComponentMenu(P3dHelper.ComponentMenuPrefix + "Gradually Fade")]
 	public class P3dGraduallyFade : MonoBehaviour
 	{
 		/// <summary>This is the paintable texture whose pixels we will fade.</summary>
@@ -29,7 +29,7 @@ namespace PaintIn3D.Examples
 		/// <summary>The color that will be faded toward.</summary>
 		public Color Color { set { color = value; } get { return color; } } [SerializeField] private Color color = Color.white;
 
-		/// <summary>Once this component has accumilated this amount of fade, it will be applied to the <b>PaintableTexture</b>. The lower this value, the smoother the fading will appear, but also the higher the performance cost.</summary>
+		/// <summary>Once this component has accumulated this amount of fade, it will be applied to the <b>PaintableTexture</b>. The lower this value, the smoother the fading will appear, but also the higher the performance cost.</summary>
 		public float Threshold { set { threshold = value; } get { return threshold; } } [Range(0.0f, 1.0f)] [SerializeField] private float threshold = 0.02f;
 
 		/// <summary>The speed of the fading.
@@ -82,17 +82,20 @@ namespace PaintIn3D.Examples
 }
 
 #if UNITY_EDITOR
-namespace PaintIn3D.Examples
+namespace PaintIn3D
 {
 	using UnityEditor;
+	using TARGET = P3dGraduallyFade;
 
 	[CanEditMultipleObjects]
-	[CustomEditor(typeof(P3dGraduallyFade))]
-	public class P3dGraduallyFade_Editor : P3dEditor<P3dGraduallyFade>
+	[CustomEditor(typeof(TARGET))]
+	public class P3dGraduallyFade_Editor : P3dEditor
 	{
 		protected override void OnInspector()
 		{
-			BeginError(Any(t => t.PaintableTexture == null));
+			TARGET tgt; TARGET[] tgts; GetTargets(out tgt, out tgts);
+
+			BeginError(Any(tgts, t => t.PaintableTexture == null));
 				Draw("paintableTexture", "This is the paintable texture whose pixels we will count.");
 			EndError();
 			Draw("blendMode", "This component will paint using this blending mode.\n\nNOTE: See P3dBlendMode documentation for more information.");
@@ -112,10 +115,10 @@ namespace PaintIn3D.Examples
 
 			Separator();
 
-			BeginError(Any(t => t.Threshold <= 0.0f));
-				Draw("threshold", "Once this component has accumilated this amount of fade, it will be applied to the PaintableTexture. The lower this value, the smoother the fading will appear, but also the higher the performance cost.");
+			BeginError(Any(tgts, t => t.Threshold <= 0.0f));
+				Draw("threshold", "Once this component has accumulated this amount of fade, it will be applied to the PaintableTexture. The lower this value, the smoother the fading will appear, but also the higher the performance cost.");
 			EndError();
-			BeginError(Any(t => t.Speed <= 0.0f));
+			BeginError(Any(tgts, t => t.Speed <= 0.0f));
 				Draw("speed", "The speed of the fading.\n\n1 = 1 Second.\n\n2 = 0.5 Seconds.");
 			EndError();
 		}

@@ -22,7 +22,7 @@ namespace PaintIn3D
 		/// NOTE: The pixel totals will be multiplied to account for this downsampling.</summary>
 		public int DownsampleSteps { set { downsampleSteps = value; } get { return downsampleSteps; } } [SerializeField] protected int downsampleSteps = 3;
 
-		/// <summary>This event is inved each time this texture monitor updates its pixel counts.</summary>
+		/// <summary>This event is invoked each time this texture monitor updates its pixel counts.</summary>
 		public event System.Action OnUpdated;
 
 		[SerializeField]
@@ -176,16 +176,19 @@ namespace PaintIn3D
 namespace PaintIn3D
 {
 	using UnityEditor;
+	using TARGET = P3dPaintableTextureMonitor;
 
-	public class P3dPaintableTextureMonitor_Editor<T> : P3dEditor<T>
-		where T : P3dPaintableTextureMonitor
+	[CustomEditor(typeof(TARGET))]
+	public class P3dPaintableTextureMonitor_Editor : P3dEditor
 	{
 		protected override void OnInspector()
 		{
-			BeginError(Any(t => t.PaintableTexture == null));
+			TARGET tgt; TARGET[] tgts; GetTargets(out tgt, out tgts);
+
+			BeginError(Any(tgts, t => t.PaintableTexture == null));
 				if (Draw("paintableTexture", "This is the paintable texture whose pixels we will count.") == true)
 				{
-					Each(t =>
+					Each(tgts, t =>
 						{
 							if (t.Registered == true)
 							{
@@ -196,7 +199,7 @@ namespace PaintIn3D
 			EndError();
 			Draw("interval", "This allows you to specify the maximum time between each texture read in seconds.\n\n0 = Instant.\n\n1 = Once a second.");
 			Draw("async", "If you disable this, then the texture will be updated immediately, which may cause slowdown.\n\nNOTE: This isn't supported on all devices.");
-			BeginError(Any(t => t.DownsampleSteps < 0));
+			BeginError(Any(tgts, t => t.DownsampleSteps < 0));
 				Draw("downsampleSteps", "Counting all the pixels of a texture can be slow, so you can pick how many times the texture is downsampled before it gets counted. One downsample = half width & height or 1/4 of the pixels. NOTE: The pixel totals will be multiplied to account for this downsampling.");
 			EndError();
 		}

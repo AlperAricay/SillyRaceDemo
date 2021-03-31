@@ -1,16 +1,16 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
 
-namespace PaintIn3D.Examples
+namespace PaintIn3D
 {
 	/// <summary>This component will total up all RGBA channels in the specified P3dPaintableTexture that exceed the threshold value.</summary>
 	[ExecuteInEditMode]
 	[HelpURL(P3dHelper.HelpUrlPrefix + "P3dChannelCounter")]
-	[AddComponentMenu(P3dHelper.ComponentMenuPrefix + "Examples/Channel Counter")]
+	[AddComponentMenu(P3dHelper.ComponentMenuPrefix + "Channel Counter")]
 	public class P3dChannelCounter : P3dPaintableTextureMonitorMask
 	{
 		/// <summary>This stores all active and enabled instances.</summary>
-		public static LinkedList<P3dChannelCounter> Instances = new LinkedList<P3dChannelCounter>(); private LinkedListNode<P3dChannelCounter> node;
+		public static LinkedList<P3dChannelCounter> Instances = new LinkedList<P3dChannelCounter>(); private LinkedListNode<P3dChannelCounter> instancesNode;
 
 		/// <summary>The RGBA value must be higher than this for it to be counted.</summary>
 		public float Threshold { set { threshold = value; } get { return threshold; } } [Range(0.0f, 1.0f)] [SerializeField] private float threshold = 0.5f;
@@ -140,7 +140,7 @@ namespace PaintIn3D.Examples
 
 		protected override void OnEnable()
 		{
-			node = Instances.AddLast(this);
+			instancesNode = Instances.AddLast(this);
 
 			base.OnEnable();
 		}
@@ -149,7 +149,7 @@ namespace PaintIn3D.Examples
 		{
 			base.OnDisable();
 
-			Instances.Remove(node); node = null;
+			Instances.Remove(instancesNode); instancesNode = null;
 		}
 
 		protected override void HandleComplete(int boost)
@@ -197,15 +197,18 @@ namespace PaintIn3D.Examples
 }
 
 #if UNITY_EDITOR
-namespace PaintIn3D.Examples
+namespace PaintIn3D
 {
 	using UnityEditor;
+	using TARGET = P3dChannelCounter;
 
-	[CustomEditor(typeof(P3dChannelCounter))]
-	public class P3dChannelCounter_Editor : P3dPaintableTextureMonitorMask_Editor<P3dChannelCounter>
+	[CustomEditor(typeof(TARGET))]
+	public class P3dChannelCounter_Editor : P3dPaintableTextureMonitorMask_Editor
 	{
 		protected override void OnInspector()
 		{
+			TARGET tgt; TARGET[] tgts; GetTargets(out tgt, out tgts);
+
 			base.OnInspector();
 
 			Draw("threshold", "The RGBA value must be higher than this for it to be counted.");
@@ -213,12 +216,12 @@ namespace PaintIn3D.Examples
 			Separator();
 
 			BeginDisabled();
-				EditorGUILayout.IntField("Total", Target.Total);
+				EditorGUILayout.IntField("Total", tgt.Total);
 
-				DrawChannel("countR", "Ratio R", Target.RatioR);
-				DrawChannel("countG", "Ratio G", Target.RatioG);
-				DrawChannel("countB", "Ratio B", Target.RatioB);
-				DrawChannel("countA", "Ratio A", Target.RatioA);
+				DrawChannel("countR", "Ratio R", tgt.RatioR);
+				DrawChannel("countG", "Ratio G", tgt.RatioG);
+				DrawChannel("countB", "Ratio B", tgt.RatioB);
+				DrawChannel("countA", "Ratio A", tgt.RatioA);
 			EndDisabled();
 		}
 

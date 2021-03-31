@@ -8,78 +8,56 @@ namespace PaintIn3D
 	/// <summary>This class includes useful editor-specific methods used by many other classes.</summary>
 	public static partial class P3dHelper
 	{
-		private static List<Color> colors = new List<Color>();
+		
 
-		private static List<float> labelWidths = new List<float>();
+		public static string FindScriptGUID<T>()
+			where T : MonoBehaviour
+		{
+			var guids = AssetDatabase.FindAssets("t:Script " + typeof(T).Name);
+
+			foreach (var guid in guids)
+			{
+				if (System.IO.Path.GetFileName(AssetDatabase.GUIDToAssetPath(guid)) == typeof(T).Name + ".cs")
+				{
+					return guid;
+				}
+			}
+
+			return null;
+		}
+
+		public static T LoadPrefabIfItContainsScriptGUID<T>(string prefabGuid, string scriptGuid)
+			where T : MonoBehaviour
+		{
+			var prefabPath = AssetDatabase.GUIDToAssetPath(prefabGuid);
+
+			foreach (var line in System.IO.File.ReadLines(prefabPath))
+			{
+				if (line.Contains(scriptGuid) == true)
+				{
+					var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(prefabPath);
+
+					if (prefab != null)
+					{
+						var component = prefab.GetComponent<T>();
+
+						if (component != null)
+						{
+							return component;
+						}
+					}
+
+					break;
+				}
+			}
+
+			return null;
+		}
 
 		public static void ClearControl()
 		{
 			GUIUtility.keyboardControl = -1;
 			GUIUtility.hotControl      = -1;
-		}
-
-		private static void UpdateDefaults()
-		{
-			while (colors.Count > 0)
-			{
-				EndColor();
-			}
-
-			while (labelWidths.Count > 0)
-			{
-				EndLabelWidth();
-			}
-		}
-
-		public static void ClearStacks()
-		{
-			colors.Clear();
-			labelWidths.Clear();
-
-			UpdateDefaults();
-		}
-
-		public static void BeginColor(bool error = true)
-		{
-			BeginColor(Color.red, error);
-		}
-
-		public static void BeginColor(Color color, bool show = true)
-		{
-			colors.Add(GUI.color);
-
-			GUI.color = show == true ? color : colors[0];
-		}
-
-		public static void EndColor()
-		{
-			if (colors.Count > 0)
-			{
-				var index = colors.Count - 1;
-
-				GUI.color = colors[index];
-
-				colors.RemoveAt(index);
-			}
-		}
-
-		public static void BeginLabelWidth(float width)
-		{
-			labelWidths.Add(EditorGUIUtility.labelWidth);
-
-			EditorGUIUtility.labelWidth = width;
-		}
-
-		public static void EndLabelWidth()
-		{
-			if (labelWidths.Count > 0)
-			{
-				var index = labelWidths.Count - 1;
-
-				EditorGUIUtility.labelWidth = labelWidths[index];
-
-				labelWidths.RemoveAt(index);
-			}
 		}
 
 		public static void SelectAndPing(Object obj)

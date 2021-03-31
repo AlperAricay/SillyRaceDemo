@@ -34,7 +34,7 @@ namespace PaintIn3D
 
 		protected virtual void OnGUI()
 		{
-			P3dHelper.ClearStacks();
+			P3dEditor.ClearStacks();
 
 			scrollPosition = GUILayout.BeginScrollView(scrollPosition);
 			{

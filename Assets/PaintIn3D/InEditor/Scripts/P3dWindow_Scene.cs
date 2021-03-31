@@ -184,7 +184,7 @@ namespace PaintIn3D
 				}
 			EditorGUILayout.EndHorizontal();
 
-			P3dHelper.BeginLabelWidth(100);
+			P3dEditor.BeginLabelWidth(100);
 				EditorGUI.indentLevel++;
 					EditorGUILayout.BeginHorizontal();
 						var outputTexture    = paintableTexture.OutputTexture;
@@ -222,7 +222,7 @@ namespace PaintIn3D
 						EditorGUILayout.HelpBox("This texture hasn't been exported yet, so you cannot Export All.", MessageType.Warning);
 					}
 				EditorGUI.indentLevel--;
-			P3dHelper.EndLabelWidth();
+			P3dEditor.EndLabelWidth();
 		}
 
 		private bool CanLoadAll(P3dPaintableTexture[] paintableTextures)
@@ -276,7 +276,7 @@ namespace PaintIn3D
 					}
 				EditorGUI.EndDisabledGroup();
 				EditorGUI.BeginDisabledGroup(CanExportAll(paintableTextures) == false);
-					P3dHelper.BeginColor(Color.green);
+					P3dEditor.BeginColor(Color.green);
 						if (GUILayout.Button("Export All", EditorStyles.toolbarButton, GUILayout.ExpandWidth(false)) == true)
 						{
 							if (EditorUtility.DisplayDialog("Are you sure?", "This will re-export all paintable textures in your scene.", "ok") == true)
@@ -292,7 +292,7 @@ namespace PaintIn3D
 								AssetDatabase.Refresh();
 							}
 						}
-					P3dHelper.EndColor();
+					P3dEditor.EndColor();
 				EditorGUI.EndDisabledGroup();
 			EditorGUILayout.EndHorizontal();
 		}

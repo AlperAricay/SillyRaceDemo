@@ -2,16 +2,16 @@
 using Unity.Collections;
 using System.Collections.Generic;
 
-namespace PaintIn3D.Examples
+namespace PaintIn3D
 {
 	/// <summary>This component will total up all RGBA channels in the specified P3dPaintableTexture that exceed the threshold value.</summary>
 	[ExecuteInEditMode]
 	[HelpURL(P3dHelper.HelpUrlPrefix + "P3dChangeCounter")]
-	[AddComponentMenu(P3dHelper.ComponentMenuPrefix + "Examples/Change Counter")]
+	[AddComponentMenu(P3dHelper.ComponentMenuPrefix + "Change Counter")]
 	public class P3dChangeCounter : P3dPaintableTextureMonitorMask
 	{
 		/// <summary>This stores all active and enabled instances.</summary>
-		public static LinkedList<P3dChangeCounter> Instances = new LinkedList<P3dChangeCounter>(); private LinkedListNode<P3dChangeCounter> node;
+		public static LinkedList<P3dChangeCounter> Instances = new LinkedList<P3dChangeCounter>(); private LinkedListNode<P3dChangeCounter> instancesNode;
 
 		/// <summary>The RGBA values must be within this range of a color for it to be counted.</summary>
 		public float Threshold { set { threshold = value; } get { return threshold; } } [Range(0.0f, 1.0f)] [SerializeField] private float threshold = 0.1f;
@@ -124,9 +124,9 @@ namespace PaintIn3D.Examples
 
 		protected override void OnEnable()
 		{
-			base.OnEnable();
+			instancesNode = Instances.AddLast(this);
 
-			node = Instances.AddLast(this);
+			base.OnEnable();
 
 			if (changeReader != null)
 			{
@@ -136,9 +136,9 @@ namespace PaintIn3D.Examples
 
 		protected override void OnDisable()
 		{
-			base.OnDisable();
+			Instances.Remove(instancesNode); instancesNode = null;
 
-			Instances.Remove(node); node = null;
+			base.OnDisable();
 
 			if (changeReader != null)
 			{
@@ -196,53 +196,56 @@ namespace PaintIn3D.Examples
 }
 
 #if UNITY_EDITOR
-namespace PaintIn3D.Examples
+namespace PaintIn3D
 {
 	using UnityEditor;
+	using TARGET = P3dChangeCounter;
 
-	[CustomEditor(typeof(P3dChangeCounter))]
-	public class P3dChangeCounter_Editor : P3dPaintableTextureMonitorMask_Editor<P3dChangeCounter>
+	[CustomEditor(typeof(TARGET))]
+	public class P3dChangeCounter_Editor : P3dPaintableTextureMonitorMask_Editor
 	{
 		protected override void OnInspector()
 		{
+			TARGET tgt; TARGET[] tgts; GetTargets(out tgt, out tgts);
+
 			base.OnInspector();
 
 			Separator();
 
 			Draw("threshold", "The RGBA value must be higher than this for it to be counted.");
-			DrawTexture();
-			DrawColor();
+			DrawTexture(tgts);
+			DrawColor(tgts);
 
 			Separator();
 
 			BeginDisabled();
-				EditorGUILayout.IntField("Total", Target.Total);
+				EditorGUILayout.IntField("Total", tgt.Total);
 
-				DrawChannel("count", "Ratio ", Target.Ratio);
+				DrawChannel("count", "Ratio ", tgt.Ratio);
 			EndDisabled();
 		}
 
-		private void DrawTexture()
+		private void DrawTexture(TARGET[] tgts)
 		{
 			EditorGUILayout.BeginHorizontal();
 				Draw("texture", "The texture we want to compare change to.\n\nNone/null = white.\n\nNOTE: All pixels in this texture will be tinted by the current Color.");
-				EditorGUI.BeginDisabledGroup(All(t => t.PaintableTexture == null || t.PaintableTexture.Texture == t.Texture));
+				EditorGUI.BeginDisabledGroup(All(tgts, t => t.PaintableTexture == null || t.PaintableTexture.Texture == t.Texture));
 					if (GUILayout.Button("Copy", EditorStyles.miniButton, GUILayout.ExpandWidth(false)) == true)
 					{
-						Undo.RecordObjects(targets, "Copy Texture"); Each(t => { if (t.PaintableTexture != null) { t.Texture = t.PaintableTexture.Texture; EditorUtility.SetDirty(t); } });
+						Undo.RecordObjects(targets, "Copy Texture"); Each(tgts, t => { if (t.PaintableTexture != null) { t.Texture = t.PaintableTexture.Texture; EditorUtility.SetDirty(t); } });
 					}
 				EditorGUI.EndDisabledGroup();
 			EditorGUILayout.EndHorizontal();
 		}
 
-		private void DrawColor()
+		private void DrawColor(TARGET[] tgts)
 		{
 			EditorGUILayout.BeginHorizontal();
 				Draw("color", "The color we want to compare change to.\n\nNOTE: All pixels in the Texture will be tinted by this.");
-				EditorGUI.BeginDisabledGroup(All(t => t.PaintableTexture == null || t.PaintableTexture.Color == t.Color));
+				EditorGUI.BeginDisabledGroup(All(tgts, t => t.PaintableTexture == null || t.PaintableTexture.Color == t.Color));
 					if (GUILayout.Button("Copy", EditorStyles.miniButton, GUILayout.ExpandWidth(false)) == true)
 					{
-						Undo.RecordObjects(targets, "Copy Color"); Each(t => { if (t.PaintableTexture != null) { t.Color = t.PaintableTexture.Color; EditorUtility.SetDirty(t); } });
+						Undo.RecordObjects(targets, "Copy Color"); Each(tgts, t => { if (t.PaintableTexture != null) { t.Color = t.PaintableTexture.Color; EditorUtility.SetDirty(t); } });
 					}
 				EditorGUI.EndDisabledGroup();
 			EditorGUILayout.EndHorizontal();

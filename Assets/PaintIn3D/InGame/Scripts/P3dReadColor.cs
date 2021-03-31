@@ -6,7 +6,7 @@ namespace PaintIn3D
 	/// <summary>This component allows you to read the paint color at a hit point. A hit point can be found using a companion component like: P3dHitScreen, P3dHitBetween.
 	/// NOTE: This component only works when you hit a non-convex MeshCollider that has UV data.</summary>
 	[HelpURL(P3dHelper.HelpUrlPrefix + "P3dReadColor")]
-	[AddComponentMenu(P3dHelper.ComponentMenuPrefix + "Paint/Read Color")]
+	[AddComponentMenu(P3dHelper.ComponentHitMenuPrefix + "Read Color")]
 	public class P3dReadColor : MonoBehaviour, IHit, IHitCoord
 	{
 		[System.Serializable] public class ColorEvent : UnityEvent<Color> {}
@@ -58,13 +58,16 @@ namespace PaintIn3D
 namespace PaintIn3D
 {
 	using UnityEditor;
+	using TARGET = P3dReadColor;
 
 	[CanEditMultipleObjects]
-	[CustomEditor(typeof(P3dReadColor))]
-	public class P3dReadColor_Editor : P3dEditor<P3dReadColor>
+	[CustomEditor(typeof(TARGET))]
+	public class P3dReadColor_Editor : P3dEditor
 	{
 		protected override void OnInspector()
 		{
+			TARGET tgt; TARGET[] tgts; GetTargets(out tgt, out tgts);
+
 			Draw("group", "Only the P3dPaintableTexture components with a matching group will be read by this component.");
 			Draw("preview", "Should the color be read during preview painting too?");
 			Draw("color", "The last read color value.");

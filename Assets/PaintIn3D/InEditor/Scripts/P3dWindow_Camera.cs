@@ -16,7 +16,7 @@ namespace PaintIn3D
 
 				EditorGUILayout.Separator();
 
-				P3dHelper.BeginLabelWidth(100);
+				P3dEditor.BeginLabelWidth(100);
 					EditorGUILayout.LabelField("Controls", EditorStyles.boldLabel);
 					Settings.MoveSpeed    = EditorGUILayout.FloatField("Speed", Settings.MoveSpeed);
 					Settings.MoveForward  = (KeyCode)EditorGUILayout.EnumPopup("Forward", Settings.MoveForward);
@@ -61,7 +61,7 @@ namespace PaintIn3D
 							EditorGUILayout.HelpBox("The camera moved unexpectedly. Mabe your scene already has camera controls?", MessageType.Warning);
 						}
 					}
-				P3dHelper.EndLabelWidth();
+				P3dEditor.EndLabelWidth();
 			GUILayout.EndScrollView();
 
 			GUILayout.FlexibleSpace();

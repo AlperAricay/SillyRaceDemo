@@ -4,7 +4,7 @@ namespace PaintIn3D
 {
 	/// <summary>This component implements the replace channels paint mode, which will replace all pixels in the specified textures and channel weights.</summary>
 	[HelpURL(P3dHelper.HelpUrlPrefix + "P3dPaintReplaceChannels")]
-	[AddComponentMenu(P3dHelper.ComponentMenuPrefix + "Paint/Paint Replace Channels")]
+	[AddComponentMenu(P3dHelper.ComponentHitMenuPrefix + "Paint Replace Channels")]
 	public class P3dPaintReplaceChannels : MonoBehaviour, IHit, IHitCoord
 	{
 		/// <summary>Only the <b>P3dPaintableTexture</b> components with a matching group will be painted by this component.</summary>
@@ -49,13 +49,16 @@ namespace PaintIn3D
 namespace PaintIn3D
 {
 	using UnityEditor;
+	using TARGET = P3dPaintReplaceChannels;
 
 	[CanEditMultipleObjects]
-	[CustomEditor(typeof(P3dPaintReplaceChannels))]
-	public class P3dPaintReplaceChannels_Editor : P3dEditor<P3dPaintReplaceChannels>
+	[CustomEditor(typeof(TARGET))]
+	public class P3dPaintReplaceChannels_Editor : P3dEditor
 	{
 		protected override void OnInspector()
 		{
+			TARGET tgt; TARGET[] tgts; GetTargets(out tgt, out tgts);
+
 			Draw("group", "Only the P3dPaintableTexture components with a matching group will be painted by this component.");
 
 			Separator();

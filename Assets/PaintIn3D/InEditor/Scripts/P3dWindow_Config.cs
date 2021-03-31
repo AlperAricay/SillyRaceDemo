@@ -114,7 +114,7 @@ namespace PaintIn3D
 		private void DrawConfigTab()
 		{
 			configScrollPosition = GUILayout.BeginScrollView(configScrollPosition, GUILayout.ExpandHeight(true));
-				P3dHelper.BeginLabelWidth(100);
+				P3dEditor.BeginLabelWidth(100);
 					Settings.ColorGroup = EditorGUILayout.IntField("Color Group", Settings.ColorGroup);
 					Settings.IconSize = EditorGUILayout.IntSlider("Icon Size", Settings.IconSize, 32, 256);
 					EditorGUILayout.BeginHorizontal();
@@ -137,6 +137,7 @@ namespace PaintIn3D
 							ClearSettings();
 						}
 					}
+				P3dEditor.EndLabelWidth();
 			GUILayout.EndScrollView();
 		}
 

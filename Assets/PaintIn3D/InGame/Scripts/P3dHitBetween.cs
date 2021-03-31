@@ -1,12 +1,14 @@
 ﻿using UnityEngine;
+using UnityEngine.Events;
+using FSA = UnityEngine.Serialization.FormerlySerializedAsAttribute;
 
 namespace PaintIn3D
 {
 	/// <summary>This component raycasts between two points, and fires hit events when the ray hits something.</summary>
 	[ExecuteInEditMode]
 	[HelpURL(P3dHelper.HelpUrlPrefix + "P3dHitBetween")]
-	[AddComponentMenu(P3dHelper.ComponentMenuPrefix + "Hit/Hit Between")]
-	public class P3dHitBetween : P3dConnectablePoints
+	[AddComponentMenu(P3dHelper.ComponentHitMenuPrefix + "Hit Between")]
+	public class P3dHitBetween : MonoBehaviour
 	{
 		public enum PhaseType
 		{
@@ -26,7 +28,7 @@ namespace PaintIn3D
 			RayDirection
 		}
 
-		public enum DrawType
+		public enum EmitType
 		{
 			PointsIn3D    = 0,
 			PointsOnUV    = 20,
@@ -39,7 +41,7 @@ namespace PaintIn3D
 		/// <summary>The time in seconds between each raycast.
 		/// 0 = Every frame.
 		/// -1 = Manual only.</summary>
-		public float Interval { set { interval = value; } get { return interval; } } [UnityEngine.Serialization.FormerlySerializedAs("delay")] [SerializeField] private float interval = 0.05f;
+		public float Interval { set { interval = value; } get { return interval; } } [FSA("delay")] [SerializeField] private float interval = 0.05f;
 
 		/// <summary>The start point of the raycast.</summary>
 		public Transform PointA { set { pointA = value; } get { return pointA; } } [SerializeField] private Transform pointA;
@@ -77,17 +79,20 @@ namespace PaintIn3D
 		/// <summary>This allows you to control the pressure of the painting. This could be controlled by a VR trigger or similar for more advanced effects.</summary>
 		public float Pressure { set { pressure = value; } get { return pressure; } } [Range(0.0f, 1.0f)] [SerializeField] private float pressure = 1.0f;
 
-		/// <summary>This allows you to control how the drawn shape is filled.
+		/// <summary>This allows you to control the hit data this component sends out.
 		/// PointsIn3D = Point drawing in 3D.
 		/// PointsOnUV = Point drawing on UV (requires non-convex <b>MeshCollider</b>).
 		/// TrianglesIn3D = Triangle drawing in 3D.</summary>
-		public DrawType Draw { set { draw = value; } get { return draw; } } [SerializeField] private DrawType draw;
+		public EmitType Draw { set { emit = value; } get { return emit; } } [FSA("draw")] [SerializeField] private EmitType emit;
 
 		/// <summary>If you want to display something at the hit point (e.g. particles), you can specify the Transform here.</summary>
 		public Transform Point { set { point = value; } get { return point; } } [SerializeField] private Transform point;
 
 		/// <summary>If you want to draw a line between the start point and the his point then you can set the line here.</summary>
 		public LineRenderer Line { set { line = value; } get { return line; } } [SerializeField] private LineRenderer line;
+
+		/// <summary>This allows you to connect the hit points together to form lines.</summary>
+		public P3dPointConnector Connector { get { if (connector == null) connector = new P3dPointConnector(); return connector; } } [SerializeField] private P3dPointConnector connector;
 
 		[System.NonSerialized]
 		private float current;
@@ -99,6 +104,11 @@ namespace PaintIn3D
 			SubmitHit(false);
 		}
 
+		protected virtual void OnEnable()
+		{
+			Connector.ResetConnections();
+		}
+
 		protected virtual void OnDisable()
 		{
 			if (point != null && pointB != null)
@@ -107,9 +117,9 @@ namespace PaintIn3D
 			}
 		}
 
-		protected override void Update()
+		protected virtual void Update()
 		{
-			base.Update();
+			connector.Update();
 
 			if (preview == true)
 			{
@@ -138,48 +148,62 @@ namespace PaintIn3D
 		{
 			if (pointA != null && pointB != null)
 			{
-				var vector      = pointB.position - pointA.position;
-				var maxDistance = vector.magnitude;
-				var ray         = new Ray(pointA.position, vector);
-				var hit         = default(RaycastHit);
+				var vector        = pointB.position - pointA.position;
+				var maxDistance   = vector.magnitude;
+				var ray           = new Ray(pointA.position, vector);
+				var hit2D         = Physics2D.GetRayIntersection(ray, float.PositiveInfinity, layers);
+				var hit3D         = default(RaycastHit);
+				var finalPosition = default(Vector3);
+				var finalRotation = default(Quaternion);
 
-				if (Physics.Raycast(ray, out hit, maxDistance, layers) == true)
+				// Hit 3D?
+				if (Physics.Raycast(ray, out hit3D, maxDistance, layers) == true && (hit2D.collider == null || hit3D.distance < hit2D.distance))
 				{
-					var finalUp       = orientation == OrientationType.CameraUp ? P3dHelper.GetCameraUp(_camera) : Vector3.up;
-					var finalPosition = hit.point + hit.normal * offset;
-					var finalNormal   = normal == NormalType.HitNormal ? hit.normal : -ray.direction;
-					var finalRotation = Quaternion.LookRotation(-finalNormal, finalUp);
+					CalcHitData(hit3D.point, hit3D.normal, ray, out finalPosition, out finalRotation);
 
-					switch (draw)
+					fraction = (hit3D.distance + offset) / maxDistance;
+
+					if (emit == EmitType.PointsIn3D)
 					{
-						case DrawType.PointsIn3D:
-						{
-							SubmitPoint(preview, priority, pressure, finalPosition, finalRotation, this);
-						}
-						break;
-
-						case DrawType.PointsOnUV:
-						{
-							hitCache.InvokeCoord(gameObject, preview, priority, pressure, new P3dHit(hit), finalRotation);
-						}
-						break;
-
-						case DrawType.TrianglesIn3D:
-						{
-							hitCache.InvokeTriangle(gameObject, preview, priority, pressure, hit, finalRotation);
-						}
-						break;
+						connector.SubmitPoint(gameObject, preview, priority, pressure, finalPosition, finalRotation, this);
 					}
+					else if (emit == EmitType.PointsOnUV)
+					{
+						connector.HitCache.InvokeCoord(gameObject, preview, priority, pressure, new P3dHit(hit3D), finalRotation);
+					}
+					else if (emit == EmitType.TrianglesIn3D)
+					{
+						connector.HitCache.InvokeTriangle(gameObject, preview, priority, pressure, hit3D, finalRotation);
+					}
+				}
+				// Hit 2D?
+				else if (hit2D.collider != null)
+				{
+					CalcHitData(hit2D.point, hit2D.normal, ray, out finalPosition, out finalRotation);
 
-					fraction = (hit.distance + offset) / maxDistance;
+					fraction = (hit3D.distance + offset) / maxDistance;
+
+					if (emit == EmitType.PointsIn3D)
+					{
+						connector.SubmitPoint(gameObject, preview, priority, pressure, finalPosition, finalRotation, this);
+					}
 				}
 				else
 				{
-					BreakHits(this);
+					connector.BreakHits(this);
 
 					fraction = 1.0f;
 				}
 			}
+		}
+
+		private void CalcHitData(Vector3 hitPoint, Vector3 hitNormal, Ray ray, out Vector3 finalPosition, out Quaternion finalRotation)
+		{
+			var finalUp     = orientation == OrientationType.CameraUp ? P3dHelper.GetCameraUp(_camera) : Vector3.up;
+			var finalNormal = normal == NormalType.HitNormal ? hitNormal : -ray.direction;
+
+			finalPosition = hitPoint + hitNormal * offset;
+			finalRotation = Quaternion.LookRotation(-finalNormal, finalUp);
 		}
 
 		private void UpdatePointAndLine()
@@ -230,62 +254,73 @@ namespace PaintIn3D
 namespace PaintIn3D
 {
 	using UnityEditor;
+	using TARGET = P3dHitBetween;
 
 	[CanEditMultipleObjects]
-	[CustomEditor(typeof(P3dHitBetween))]
-	public class P3dHitBetween_Editor : P3dConnectablePoints_Editor<P3dHitBetween>
+	[CustomEditor(typeof(TARGET))]
+	public class P3dHitBetween_Editor : P3dEditor
 	{
 		protected override void OnInspector()
 		{
+			TARGET tgt; TARGET[] tgts; GetTargets(out tgt, out tgts);
+
+			Draw("emit", "This allows you to control the hit data this component sends out.\n\nPointsIn3D = Point drawing in 3D.\n\nPointsOnUV = Point drawing on UV (requires non-convex MeshCollider).\n\nTrianglesIn3D = Triangle drawing in 3D.");
+			BeginError(Any(tgts, t => t.Layers == 0));
+				Draw("layers", "The layers you want the raycast to hit.");
+			EndError();
 			Draw("paintIn", "Where in the game loop should this component hit?");
 			Draw("interval", "The time in seconds between each raycast.\n\n0 = Every Frame\n\n-1 = Manual Only");
 
 			Separator();
 
-			BeginError(Any(t => t.PointA == null));
+			BeginError(Any(tgts, t => t.PointA == null));
 				Draw("pointA", "The start point of the raycast.");
 			EndError();
-			BeginError(Any(t => t.PointB == null));
+			BeginError(Any(tgts, t => t.PointB == null));
 				Draw("pointB", "The end point of the raycast.");
 			EndError();
-			BeginError(Any(t => t.Layers == 0));
-				Draw("layers", "The layers you want the raycast to hit.");
-			EndError();
+			
 			Draw("orientation", "How should the hit point be oriented?\n\nWorldUp = It will be rotated to the normal, where the up vector is world up.\n\nCameraUp = It will be rotated to the normal, where the up vector is world up.");
 			BeginIndent();
-				if (Any(t => t.Orientation == P3dHitBetween.OrientationType.CameraUp))
+				if (Any(tgts, t => t.Orientation == P3dHitBetween.OrientationType.CameraUp))
 				{
 					Draw("_camera", "Orient to a specific camera?\nNone = MainCamera.");
 				}
 			EndIndent();
 			Draw("normal", "Which normal should the hit point rotation be based on?");
-			Draw("offset", "If you want the raycast hit point to be offset from the surface a bit, this allows you to set by how much in world space.");
-
-			base.OnInspector();
-
+			
 			Separator();
 
 			Draw("preview", "Should the applied paint be applied as a preview?");
-			Draw("priority", "This allows you to override the order this paint gets applied to the object during the current frame.");
 			Draw("pressure", "This allows you to control the pressure of the painting. This could be controlled by a VR trigger or similar for more advanced effects.");
 
 			Separator();
 
-			Draw("draw", "This allows you to control how the drawn shape is filled.\n\nPoints = Point drawing in 3D.\n\nPointsOnUV = Point drawing on UV (requires non-convex MeshCollider).\n\nTrianglesIn3D = Triangle drawing in 3D.");
+			if (DrawFoldout("Advanced", "Show advanced settings?") == true)
+			{
+				BeginIndent();
+					Draw("priority", "This allows you to override the order this paint gets applied to the object during the current frame.");
+					Draw("offset", "If you want the raycast hit point to be offset from the surface a bit, this allows you to set by how much in world space.");
+
+					Separator();
+
+					P3dPointConnector_Editor.Draw(serializedObject);
+
+					Separator();
+
+					Draw("point", "If you want to display something at the hit point (e.g. particles), you can specify the Transform here.");
+					Draw("line", "If you want to draw a line between the start point and the his point then you can set the line here");
+				EndIndent();
+			}
 
 			Separator();
 
-			Draw("point", "If you want to display something at the hit point (e.g. particles), you can specify the Transform here.");
-			Draw("line", "If you want to draw a line between the start point and the his point then you can set the line here");
+			var point    = tgt.Draw == P3dHitBetween.EmitType.PointsIn3D;
+			var line     = tgt.Draw == P3dHitBetween.EmitType.PointsIn3D && tgt.Connector.ConnectHits == true;
+			var triangle = tgt.Draw == P3dHitBetween.EmitType.TrianglesIn3D;
+			var coord    = tgt.Draw == P3dHitBetween.EmitType.PointsOnUV;
 
-			Separator();
-
-			var point    = Target.Draw == P3dHitBetween.DrawType.PointsIn3D;
-			var line     = point == true && Target.ConnectHits == true;
-			var triangle = Target.Draw == P3dHitBetween.DrawType.TrianglesIn3D;
-			var coord    = Target.Draw == P3dHitBetween.DrawType.PointsOnUV;
-
-			Target.HitCache.Inspector(Target.gameObject, point: point, line: line, triangle: triangle, coord: coord);
+			tgt.Connector.HitCache.Inspector(tgt.gameObject, point: point, line: line, triangle: triangle, coord: coord);
 		}
 	}
 }

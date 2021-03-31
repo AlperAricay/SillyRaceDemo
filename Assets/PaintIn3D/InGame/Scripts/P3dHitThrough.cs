@@ -1,12 +1,13 @@
 ﻿using UnityEngine;
+using FSA = UnityEngine.Serialization.FormerlySerializedAsAttribute;
 
 namespace PaintIn3D
 {
 	/// <summary>This component constantly draws lines between the two specified points.</summary>
 	[ExecuteInEditMode]
 	[HelpURL(P3dHelper.HelpUrlPrefix + "P3dHitThrough")]
-	[AddComponentMenu(P3dHelper.ComponentMenuPrefix + "Hit/Hit Through")]
-	public class P3dHitThrough : P3dConnectableLines
+	[AddComponentMenu(P3dHelper.ComponentHitMenuPrefix + "Hit Through")]
+	public class P3dHitThrough : MonoBehaviour
 	{
 		public enum PhaseType
 		{
@@ -26,7 +27,7 @@ namespace PaintIn3D
 		/// <summary>The time in seconds between each hit.
 		/// 0 = Every frame.
 		/// -1 = Manual only.</summary>
-		public float Interval { set { interval = value; } get { return interval; } } [UnityEngine.Serialization.FormerlySerializedAs("delay")] [SerializeField] private float interval = 0.05f;
+		public float Interval { set { interval = value; } get { return interval; } } [FSA("delay")] [SerializeField] private float interval = 0.05f;
 
 		/// <summary>The start point of the raycast.</summary>
 		public Transform PointA { set { pointA = value; } get { return pointA; } } [SerializeField] private Transform pointA;
@@ -55,6 +56,9 @@ namespace PaintIn3D
 		/// <summary>If you want to draw a line between the start point and the his point then you can set the line here.</summary>
 		public LineRenderer Line { set { line = value; } get { return line; } } [SerializeField] private LineRenderer line;
 
+		/// <summary>This allows you to connect the hit points together to form lines.</summary>
+		public P3dLineConnector Connector { get { if (connector == null) connector = new P3dLineConnector(); return connector; } } [SerializeField] private P3dLineConnector connector;
+
 		[System.NonSerialized]
 		private float current;
 
@@ -65,9 +69,14 @@ namespace PaintIn3D
 			SubmitHit(false);
 		}
 
-		protected override void Update()
+		protected virtual void OnEnable()
 		{
-			base.Update();
+			Connector.ResetConnections();
+		}
+
+		protected virtual void Update()
+		{
+			connector.Update();
 
 			if (preview == true)
 			{
@@ -103,7 +112,7 @@ namespace PaintIn3D
 				var vector    = positionB - positionA;
 				var rotation  = vector != Vector3.zero ? Quaternion.LookRotation(vector, finalUp) : Quaternion.identity;
 
-				SubmitLine(preview, priority, pointA.position, pointB.position, rotation, pressure, this);
+				connector.SubmitLine(gameObject, preview, priority, pointA.position, pointB.position, rotation, pressure, this);
 			}
 		}
 
@@ -149,50 +158,64 @@ namespace PaintIn3D
 namespace PaintIn3D
 {
 	using UnityEditor;
+	using TARGET = P3dHitThrough;
 
 	[CanEditMultipleObjects]
-	[CustomEditor(typeof(P3dHitThrough))]
-	public class P3dHitThrough_Editor : P3dConnectableLines_Editor<P3dHitThrough>
+	[CustomEditor(typeof(TARGET))]
+	public class P3dHitThrough_Editor : P3dEditor
 	{
 		protected override void OnInspector()
 		{
+			TARGET tgt; TARGET[] tgts; GetTargets(out tgt, out tgts);
+
+			BeginDisabled(true);
+				EditorGUILayout.TextField("Emit", "Lines In 3D", EditorStyles.popup);
+			EndDisabled();
+
 			Draw("paintIn", "Where in the game loop should this component hit?");
 			Draw("interval", "The time in seconds between each hit.\n\n0 = Every frame.\n\n-1 = Manual only.");
 
 			Separator();
 
-			BeginError(Any(t => t.PointA == null));
+			BeginError(Any(tgts, t => t.PointA == null));
 				Draw("pointA", "The start point of the raycast.");
 			EndError();
-			BeginError(Any(t => t.PointB == null));
+			BeginError(Any(tgts, t => t.PointB == null));
 				Draw("pointB", "The end point of the raycast.");
 			EndError();
 			Draw("orientation", "How should the hit point be oriented?\n\nWorldUp = It will be rotated to the normal, where the up vector is world up.\n\nCameraUp = It will be rotated to the normal, where the up vector is world up.");
 			BeginIndent();
-				if (Any(t => t.Orientation == P3dHitThrough.OrientationType.CameraUp))
+				if (Any(tgts, t => t.Orientation == P3dHitThrough.OrientationType.CameraUp))
 				{
 					Draw("_camera", "Orient to a specific camera?\nNone = MainCamera.");
 				}
 			EndIndent();
 
-			base.OnInspector();
-
 			Separator();
 
 			Draw("preview", "Should the applied paint be applied as a preview?");
-			Draw("priority", "This allows you to override the order this paint gets applied to the object during the current frame.");
 			Draw("pressure", "This allows you to control the pressure of the painting. This could be controlled by a VR trigger or similar for more advanced effects.");
 
 			Separator();
 
-			Draw("line", "If you want to draw a line between the start point and the his point then you can set the line here");
+			if (DrawFoldout("Advanced", "Show advanced settings?") == true)
+			{
+				BeginIndent();
+					P3dLineConnector_Editor.Draw(serializedObject);
+
+					Separator();
+					
+					Draw("priority", "This allows you to override the order this paint gets applied to the object during the current frame.");
+					Draw("line", "If you want to draw a line between the start point and the his point then you can set the line here");
+				EndIndent();
+			}
 
 			Separator();
 
 			var line = true;
-			var quad = line == true && Target.ConnectHits == true;
+			var quad = tgt.Connector.ConnectHits == true;
 
-			Target.HitCache.Inspector(Target.gameObject, line: line, quad: quad);
+			tgt.Connector.HitCache.Inspector(tgt.gameObject, line: line, quad: quad);
 		}
 	}
 }

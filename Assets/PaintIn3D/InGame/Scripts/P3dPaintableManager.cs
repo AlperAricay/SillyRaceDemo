@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using System.Collections.Generic;
 
 namespace PaintIn3D
 {
@@ -7,11 +8,14 @@ namespace PaintIn3D
 	[DisallowMultipleComponent]
 	[HelpURL(P3dHelper.HelpUrlPrefix + "P3dPaintableManager")]
 	[AddComponentMenu(P3dHelper.ComponentMenuPrefix + "Paintable Manager")]
-	public class P3dPaintableManager : P3dLinkedBehaviour<P3dPaintableManager>
+	public class P3dPaintableManager : MonoBehaviour
 	{
+		/// <summary>This stores all active and enabled instances in the open scenes.</summary>
+		public static LinkedList<P3dPaintableManager> Instances { get { return instances; } } private static LinkedList<P3dPaintableManager> instances = new LinkedList<P3dPaintableManager>(); private LinkedListNode<P3dPaintableManager> instancesNode;
+
 		public static P3dPaintableManager GetOrCreateInstance()
 		{
-			if (InstanceCount == 0)
+			if (instances.Count == 0)
 			{
 				var paintableManager = new GameObject(typeof(P3dPaintableManager).Name);
 
@@ -20,7 +24,7 @@ namespace PaintIn3D
 				paintableManager.AddComponent<P3dPaintableManager>();
 			}
 
-			return FirstInstance;
+			return instances.First.Value;
 		}
 
 		public static void SubmitAll(P3dCommand command, Vector3 position, float radius, int layerMask, P3dGroup group, P3dModel targetModel, P3dPaintableTexture targetTexture)
@@ -105,9 +109,19 @@ namespace PaintIn3D
 			return copy;
 		}
 
+		protected virtual void OnEnable()
+		{
+			instancesNode = instances.AddLast(this);
+		}
+
+		protected virtual void OnDisable()
+		{
+			instances.Remove(instancesNode); instancesNode = null;
+		}
+
 		protected virtual void LateUpdate()
 		{
-			if (this == FirstInstance && P3dModel.InstanceCount > 0)
+			if (this == instances.First.Value && P3dModel.Instances.Count > 0)
 			{
 				ClearAll();
 				UpdateAll();
@@ -120,25 +134,17 @@ namespace PaintIn3D
 
 		private void ClearAll()
 		{
-			var model = P3dModel.FirstInstance;
-
-			for (var i = 0; i < P3dModel.InstanceCount; i++)
+			foreach (var model in P3dModel.Instances)
 			{
 				model.Prepared = false;
-
-				model = model.NextInstance;
 			}
 		}
 
 		private void UpdateAll()
 		{
-			var paintableTexture = P3dPaintableTexture.FirstInstance;
-
-			for (var i = 0; i < P3dPaintableTexture.InstanceCount; i++)
+			foreach (var paintableTexture in P3dPaintableTexture.Instances)
 			{
 				paintableTexture.ExecuteCommands(true);
-
-				paintableTexture = paintableTexture.NextInstance;
 			}
 		}
 	}
@@ -148,14 +154,17 @@ namespace PaintIn3D
 namespace PaintIn3D
 {
 	using UnityEditor;
+	using TARGET = P3dPaintableManager;
 
 	[CanEditMultipleObjects]
-	[CustomEditor(typeof(P3dPaintableManager))]
-	public class P3dPaintableManager_Editor : P3dEditor<P3dPaintableManager>
+	[CustomEditor(typeof(TARGET))]
+	public class P3dPaintableManager_Editor : P3dEditor
 	{
 		protected override void OnInspector()
 		{
-			EditorGUILayout.HelpBox("This component automatically updates all P3dModel and P3dPaintableTexture instances at the end of the frame, batching all paint operations together.", MessageType.Info);
+			TARGET tgt; TARGET[] tgts; GetTargets(out tgt, out tgts);
+
+			Info("This component automatically updates all P3dModel and P3dPaintableTexture instances at the end of the frame, batching all paint operations together.");
 		}
 	}
 }

@@ -22,15 +22,13 @@ namespace PaintIn3D
 				{
 					cachedMaterials = new List<P3dMaterial>();
 #if UNITY_EDITOR
-					var guids = UnityEditor.AssetDatabase.FindAssets("t:prefab");
+					var scriptGuid  = P3dHelper.FindScriptGUID<P3dMaterial>();
 
-					foreach (var guid in guids)
+					if (scriptGuid != null)
 					{
-						var prefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>(UnityEditor.AssetDatabase.GUIDToAssetPath(guid));
-
-						if (prefab != null)
+						foreach (var prefabGuid in UnityEditor.AssetDatabase.FindAssets("t:prefab"))
 						{
-							var material = prefab.GetComponent<P3dMaterial>();
+							var material = P3dHelper.LoadPrefabIfItContainsScriptGUID<P3dMaterial>(prefabGuid, scriptGuid);
 
 							if (material != null)
 							{
@@ -78,10 +76,11 @@ namespace PaintIn3D
 	using UnityEditor;
 	using UnityEditor.SceneManagement;
 	using UnityEditor.Experimental.SceneManagement;
+	using TARGET = P3dMaterial;
 
 	[CanEditMultipleObjects]
-	[CustomEditor(typeof(P3dMaterial))]
-	public class P3dMaterial_Editor : P3dEditor<P3dMaterial>
+	[CustomEditor(typeof(TARGET))]
+	public class P3dMaterial_Editor : P3dEditor
 	{
 		private static int size = 512;
 
@@ -103,35 +102,37 @@ namespace PaintIn3D
 
 		protected override void OnInspector()
 		{
-			if (P3dMaterial.CachedMaterials.Contains(Target) == false && P3dHelper.IsAsset(Target) == true)
+			TARGET tgt; TARGET[] tgts; GetTargets(out tgt, out tgts);
+
+			if (P3dMaterial.CachedMaterials.Contains(tgt) == false && P3dHelper.IsAsset(tgt) == true)
 			{
-				P3dMaterial.CachedMaterials.Add(Target);
+				P3dMaterial.CachedMaterials.Add(tgt);
 			}
 			
 			Draw("category");
 			Draw("icon");
 			DrawTextures();
 
-			EditorGUILayout.Separator();
+			Separator();
 
-			var prefabIsOpen = PrefabStageUtility.GetPrefabStage(Target.gameObject) != null;
+			var prefabIsOpen = PrefabStageUtility.GetPrefabStage(tgt.gameObject) != null;
 
 			if (prefabIsOpen == false)
 			{
-				EditorGUILayout.HelpBox("Open this material prefab to build the materials or icons.", MessageType.Info);
+				Info("Open this material prefab to build the materials or icons.");
 			}
 
-			EditorGUI.BeginDisabledGroup(prefabIsOpen == false);
+			BeginDisabled(prefabIsOpen == false);
 				EditorGUILayout.LabelField("Material Builder", EditorStyles.boldLabel);
 
-				DrawMaterialBuilder();
+				DrawMaterialBuilder(tgt);
 
-				EditorGUILayout.Separator();
+				Separator();
 
 				EditorGUILayout.LabelField("Icon Builder", EditorStyles.boldLabel);
 
-				DrawIconBuilder();
-			EditorGUI.EndDisabledGroup();
+				DrawIconBuilder(tgt);
+			EndDisabled();
 		}
 
 		private void DrawTextures()
@@ -183,39 +184,39 @@ namespace PaintIn3D
 			}
 		}
 
-		private void DrawMaterialBuilder()
+		private void DrawMaterialBuilder(TARGET tgt)
 		{
 			EditorGUILayout.Separator();
 
-			EditorGUI.BeginDisabledGroup(Target.transform.childCount == 0);
+			EditorGUI.BeginDisabledGroup(tgt.transform.childCount == 0);
 				if (GUILayout.Button("Populate From Children") == true)
 				{
-					for (var i = 0; i < Target.transform.childCount; i++)
+					for (var i = 0; i < tgt.transform.childCount; i++)
 					{
-						var paintDecal = Target.transform.GetChild(i).GetComponent<P3dPaintDecal>();
+						var paintDecal = tgt.transform.GetChild(i).GetComponent<P3dPaintDecal>();
 
 						if (paintDecal != null)
 						{
 							var tex = paintDecal.TileTexture as Texture2D;
 
-							if (tex != null && Target.Textures.Contains(tex) == false)
+							if (tex != null && tgt.Textures.Contains(tex) == false)
 							{
-								Target.Textures.Add(tex);
+								tgt.Textures.Add(tex);
 							}
 						}
 					}
 				}
 			EditorGUI.EndDisabledGroup();
 
-			EditorGUI.BeginDisabledGroup(Target.Textures.Exists(t => t != null) == false);
+			EditorGUI.BeginDisabledGroup(tgt.Textures.Exists(t => t != null) == false);
 				if (GUILayout.Button("Build Material") == true)
 				{
-					for (var i = Target.transform.childCount - 1; i >= 0; i--)
+					for (var i = tgt.transform.childCount - 1; i >= 0; i--)
 					{
-						DestroyImmediate(Target.transform.GetChild(i).gameObject);
+						DestroyImmediate(tgt.transform.GetChild(i).gameObject);
 					}
 
-					foreach (var texture in Target.Textures)
+					foreach (var texture in tgt.Textures)
 					{
 						var title = GetTitle(texture);
 
@@ -223,7 +224,7 @@ namespace PaintIn3D
 						{
 							var child = new GameObject(title);
 
-							child.transform.SetParent(Target.transform, false);
+							child.transform.SetParent(tgt.transform, false);
 
 							foreach (var groupData in P3dGroupData_Editor.CachedInstances)
 							{
@@ -242,22 +243,59 @@ namespace PaintIn3D
 						}
 					}
 
-					EditorSceneManager.MarkSceneDirty(Target.gameObject.scene);
+					EditorSceneManager.MarkSceneDirty(tgt.gameObject.scene);
+				}
+
+				if (GUILayout.Button("Build Material As Decal") == true)
+				{
+					for (var i = tgt.transform.childCount - 1; i >= 0; i--)
+					{
+						DestroyImmediate(tgt.transform.GetChild(i).gameObject);
+					}
+
+					foreach (var texture in tgt.Textures)
+					{
+						var title = GetTitle(texture);
+
+						if (string.IsNullOrEmpty(title) == false)
+						{
+							var child = new GameObject(title);
+
+							child.transform.SetParent(tgt.transform, false);
+
+							foreach (var groupData in P3dGroupData_Editor.CachedInstances)
+							{
+								foreach (var textureData in groupData.TextureDatas)
+								{
+									if (textureData.Name == title)
+									{
+										var paintDecal = child.AddComponent<P3dPaintDecal>();
+
+										paintDecal.Group     = groupData.Index;
+										paintDecal.BlendMode = textureData.BlendMode;
+										paintDecal.Texture   = texture;
+									}
+								}
+							}
+						}
+					}
+
+					EditorSceneManager.MarkSceneDirty(tgt.gameObject.scene);
 				}
 			EditorGUI.EndDisabledGroup();
 		}
 
-		private void DrawIconBuilder()
+		private void DrawIconBuilder(TARGET tgt)
 		{
 			size = EditorGUILayout.IntField("Size", size);
 
-			EditorGUILayout.HelpBox("To build an icon I recommend you open the 'Icon Builder (Material)' demo scene, paint the sphere, and then click the button below.", MessageType.Info);
+			Info("To build an icon I recommend you open the 'Icon Builder (Material)' demo scene, paint the sphere, and then click the button below.");
 
-			EditorGUILayout.Separator();
+			Separator();
 
 			if (GUILayout.Button("Build Icon") == true)
 			{
-				var path      = System.IO.Path.ChangeExtension(PrefabStageUtility.GetPrefabStage(Target.gameObject).prefabAssetPath, "png");
+				var path      = System.IO.Path.ChangeExtension(PrefabStageUtility.GetPrefabStage(tgt.gameObject).prefabAssetPath, "png");
 				var target    = new RenderTexture(size, size, 32, RenderTextureFormat.ARGB32, RenderTextureReadWrite.Default);
 				var buffer    = new Texture2D(size, size, TextureFormat.ARGB32, false);
 				var oldActive = RenderTexture.active;
@@ -288,9 +326,9 @@ namespace PaintIn3D
 
 				importer.SaveAndReimport();
 
-				Target.Icon = AssetDatabase.LoadAssetAtPath<Texture2D>(path);
+				tgt.Icon = AssetDatabase.LoadAssetAtPath<Texture2D>(path);
 
-				EditorSceneManager.MarkSceneDirty(Target.gameObject.scene);
+				EditorSceneManager.MarkSceneDirty(tgt.gameObject.scene);
 			}
 		}
 

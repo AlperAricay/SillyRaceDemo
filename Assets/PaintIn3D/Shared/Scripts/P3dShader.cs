@@ -7,6 +7,7 @@ namespace PaintIn3D
 	{
 		public static int _Buffer;
 		public static int _BufferSize;
+		public static int _CameraOffset;
 		public static int _Channels;
 		public static int _ChannelR;
 		public static int _ChannelG;
@@ -53,6 +54,7 @@ namespace PaintIn3D
 		{
 			_Buffer = Shader.PropertyToID("_Buffer");
 			_BufferSize = Shader.PropertyToID("_BufferSize");
+			_CameraOffset = Shader.PropertyToID("_CameraOffset");
 			_Channels = Shader.PropertyToID("_Channels");
 			_ChannelR = Shader.PropertyToID("_ChannelR");
 			_ChannelG = Shader.PropertyToID("_ChannelG");

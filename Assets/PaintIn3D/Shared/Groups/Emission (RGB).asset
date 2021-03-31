@@ -45,34 +45,25 @@ MonoBehaviour:
     _EmissionMap@HDRP/Autodesk
     Interactive/AutodeskInteractiveTransparent
 
-    _EmissionMap@Paint in 3D/P3D
-    Alpha
+    _EmissionMap@Paint in 3D/Alpha
 
-    _EmissionMap@Paint in 3D/P3D Overlay
+    _EmissionMap@Paint
+    in 3D/Overlay
 
-    _EmissionMap@Paint in
-    3D/P3D Solid
-
-    _EMISSION_COLOR_MAP@Shader Graphs/ArnoldStandardSurface
+    _EmissionMap@Paint in 3D/Solid
 
     _EMISSION_COLOR_MAP@Shader
-    Graphs/ArnoldStandardSurfaceTransparent
+    Graphs/ArnoldStandardSurface
 
-    _EmissionMap@Shader Graphs/P3D
-    Alpha SRP
-
-    _EmissionMap@Shader Graphs/P3D Overlay SRP
-
-    _EmissionMap@Shader
-    Graphs/P3D Solid SRP
-
-    _EMISSION_COLOR_MAP@Shader Graphs/PhysicalMaterial3DsMax
+    _EMISSION_COLOR_MAP@Shader Graphs/ArnoldStandardSurfaceTransparent
 
     _EMISSION_COLOR_MAP@Shader
-    Graphs/PhysicalMaterial3DsMaxTransparent
+    Graphs/PhysicalMaterial3DsMax
 
-    _EmissionMap@Universal Render
-    Pipeline/Autodesk Interactive/Autodesk Interactive
+    _EMISSION_COLOR_MAP@Shader Graphs/PhysicalMaterial3DsMaxTransparent
+
+    _EmissionMap@Universal
+    Render Pipeline/Autodesk Interactive/Autodesk Interactive
 
     _EmissionMap@Universal
     Render Pipeline/Autodesk Interactive/Autodesk Interactive Masked

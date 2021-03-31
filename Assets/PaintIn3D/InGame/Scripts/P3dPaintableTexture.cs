@@ -8,7 +8,7 @@ namespace PaintIn3D
 	/// NOTE: If the texture or texture slot you want to paint is part of a shared material (e.g. prefab material), then I recommend you add the P3dMaterialCloner component to make it unique.</summary>
 	[HelpURL(P3dHelper.HelpUrlPrefix + "P3dPaintableTexture")]
 	[AddComponentMenu(P3dHelper.ComponentMenuPrefix + "Paintable Texture")]
-	public class P3dPaintableTexture : P3dLinkedBehaviour<P3dPaintableTexture>
+	public class P3dPaintableTexture : MonoBehaviour
 	{
 		public enum UndoRedoType
 		{
@@ -138,7 +138,7 @@ namespace PaintIn3D
 		/// Auto = Copied from the <b>Texture</b>.</summary>
 		public WrapType WrapV { set { wrapV = value; } get { return wrapV; } } [SerializeField] private WrapType wrapV = WrapType.Auto;
 
-		/// <summary>If <b>Texture</b> is none/null and the <b>Slot</b> texture is not null/null when this component activates, what should happen?
+		/// <summary>If this component's <b>Texture</b> setting is none/null but the <b>Slot</b> texture is not none/null when this component activates, what should happen?
 		/// Ignore = Nothing will happen.
 		/// Use = This paintable texture will activate with the <b>Slot</b> texture.
 		/// UseAndKeep = The same as <b>Use</b>, but the <b>Slot</b> texture will also be stored in the <b>Texture</b> setting.</summary>
@@ -224,6 +224,9 @@ namespace PaintIn3D
 		[System.NonSerialized]
 		private static List<P3dPaintableTexture> tempPaintableTextures = new List<P3dPaintableTexture>();
 
+		/// <summary>This stores all active and enabled instances in the open scenes.</summary>
+		public static LinkedList<P3dPaintableTexture> Instances { get { return instances; } } private static LinkedList<P3dPaintableTexture> instances = new LinkedList<P3dPaintableTexture>(); private LinkedListNode<P3dPaintableTexture> instancesNode;
+
 		/// <summary>This lets you know if this texture is activated and ready for painting. Activation is controlled by the associated P3dPaintable component.</summary>
 		public bool Activated
 		{
@@ -298,7 +301,7 @@ namespace PaintIn3D
 			}
 		}
 
-		/// <summary>This gives you the current state of this paintabe texture.
+		/// <summary>This gives you the current state of this paintable texture.
 		/// NOTE: This will only exist if your texture is activated.
 		/// NOTE: This is a <b>RenderTexture</b>, so you can't directly read it. Use the <b>GetReadableCopy()</b> method if you need to.
 		/// NOTE: This doesn't include any preview painting information, access the Preview property if you need to.</summary>
@@ -320,7 +323,7 @@ namespace PaintIn3D
 			}
 		}
 
-		/// <summary>This gives you the current state of this paintabe texture including any preview painting information.</summary>
+		/// <summary>This gives you the current state of this paintable texture including any preview painting information.</summary>
 		public RenderTexture Preview
 		{
 			get
@@ -791,13 +794,9 @@ namespace PaintIn3D
 		/// <summary>This automatically calls <b>HidePreview</b> on all active and enabled paintable textures.</summary>
 		public static void HideAllPreviews()
 		{
-			var instance = FirstInstance;
-
-			for (var i = 0; i < InstanceCount; i++)
+			foreach (var instance in instances)
 			{
 				instance.HidePreview();
-
-				instance = instance.NextInstance;
 			}
 		}
 
@@ -1017,6 +1016,16 @@ namespace PaintIn3D
 			}
 		}
 
+		protected virtual void OnEnable()
+		{
+			instancesNode = instances.AddLast(this);
+		}
+
+		protected virtual void OnDisable()
+		{
+			instances.Remove(instancesNode); instancesNode = null;
+		}
+
 		protected virtual void OnApplicationPause(bool paused)
 		{
 			if (paused == true)
@@ -1191,7 +1200,7 @@ namespace PaintIn3D
 
 					if (command.RequireMesh == true)
 					{
-						command.Model.GetPrepared(ref preparedMesh, ref preparedMatrix);
+						command.Model.GetPrepared(ref preparedMesh, ref preparedMatrix, coord);
 
 						preparedSubmesh = command.Submesh;
 						preparedCoord   = coord;
@@ -1243,20 +1252,19 @@ namespace PaintIn3D
 namespace PaintIn3D
 {
 	using UnityEditor;
+	using TARGET = P3dPaintableTexture;
 
 	[CanEditMultipleObjects]
-	[CustomEditor(typeof(P3dPaintableTexture))]
-	public class P3dPaintableTexture_Editor : P3dEditor<P3dPaintableTexture>
+	[CustomEditor(typeof(TARGET))]
+	public class P3dPaintableTexture_Editor : P3dEditor
 	{
 		private bool expandSlot;
 
-		private bool expandAdvanced;
-
 		private static List<P3dPaintableTexture> tempPaintableTextures = new List<P3dPaintableTexture>();
 
-		public void TestOverlap(ref bool slot, ref bool group)
+		public void TestOverlap(P3dPaintableTexture[] tgts, ref bool slot, ref bool group)
 		{
-			foreach (var tgt in Targets)
+			foreach (var tgt in tgts)
 			{
 				tgt.GetComponents(tempPaintableTextures);
 
@@ -1278,38 +1286,57 @@ namespace PaintIn3D
 			}
 		}
 
+		public bool SlotHasTilingOrOffset(P3dPaintableTexture[] tgts)
+		{
+			foreach (var tgt in tgts)
+			{
+				if (tgt.Slot.IsTransformed(tgt.gameObject) == true)
+				{
+					return true;
+				}
+			}
+
+			return false;
+		}
+
 		protected override void OnInspector()
 		{
+			TARGET tgt; TARGET[] tgts; GetTargets(out tgt, out tgts);
+
 			var overlapSlot  = false;
 			var overlapGroup = false;
 
-			TestOverlap(ref overlapSlot, ref overlapGroup);
+			TestOverlap(tgts, ref overlapSlot, ref overlapGroup);
 
-			if (Any(t => t.Activated == true))
+			if (Any(tgts, t => t.Activated == true))
 			{
-				EditorGUILayout.HelpBox("This component has been activated.", MessageType.Info);
+				Info("This component has been activated.");
 			}
 
-			if (Any(t => t.Activated == true && Application.isPlaying == false))
+			if (Any(tgts, t => t.Activated == true && Application.isPlaying == false))
 			{
-				EditorGUILayout.HelpBox("This component shouldn't be activated during edit mode. Deactive it from the component conext menu.", MessageType.Error);
+				Error("This component shouldn't be activated during edit mode. Deactivate it from the component context menu.");
 			}
 
-			if (Any(t => t.Activated == false && t.Paintable != null && t.Paintable.Activated == true))
+			if (Any(tgts, t => t.Activated == false && t.Paintable != null && t.Paintable.Activated == true))
 			{
-				EditorGUILayout.HelpBox("This component isn't activated, but the P3dPaintable has been, so you must manually activate this.", MessageType.Warning);
+				Warning("This component isn't activated, but the P3dPaintable has been, so you must manually activate this.");
 			}
 
 			DrawExpand(ref expandSlot, "slot", "The material index and shader texture slot name that this component will paint.");
+			if (SlotHasTilingOrOffset(tgts) == true)
+			{
+				Warning("This slot uses Tiling and/or Offset values, which are not supported.");
+			}
 			if (overlapSlot == true)
 			{
-				EditorGUILayout.HelpBox("This slot is used by multiple P3dPaintableTexture components.", MessageType.Error);
+				Error("This slot is used by multiple P3dPaintableTexture components.");
 			}
 			if (expandSlot == true)
 			{
 				BeginIndent();
 					BeginDisabled();
-						EditorGUI.ObjectField(P3dHelper.Reserve(), new GUIContent("Texture", "This is the current texture in the specified texture slot."), Target.Slot.FindTexture(Target.gameObject), typeof(Texture), false);
+						EditorGUI.ObjectField(P3dHelper.Reserve(), new GUIContent("Texture", "This is the current texture in the specified texture slot."), tgt.Slot.FindTexture(tgt.gameObject), typeof(Texture), false);
 					EndDisabled();
 				EndIndent();
 			}
@@ -1320,28 +1347,26 @@ namespace PaintIn3D
 			Draw("group", "The group you want to associate this texture with. Only painting components with a matching group can paint this texture. This allows you to paint multiple textures at the same time with different settings (e.g. Albedo + Normal).");
 			if (overlapGroup == true)
 			{
-				EditorGUILayout.HelpBox("This group is used by multiple P3dPaintableTexture components.", MessageType.Error);
+				Error("This group is used by multiple P3dPaintableTexture components.");
 			}
 			Draw("undoRedo", "This allows you to set how this texture's state is stored, allowing you to perform undo and redo operations.\n\nFullTextureCopy = A full copy of your texture will be copied for each state. This allows you to quickly undo and redo, and works with animated skinned meshes, but it uses up a lot of texture memory.\n\nLocalCommandCopy = Each paint command will be stored in local space for each state. This allows you to perform unlimited undo and redo states with minimal memory usage, because the object will be repainted from scratch. However, performance will depend on how many states must be redrawn, and it may not work well with skinned meshes.");
-			if (Any(t => t.UndoRedo == P3dPaintableTexture.UndoRedoType.FullTextureCopy))
+			if (Any(tgts, t => t.UndoRedo == P3dPaintableTexture.UndoRedoType.FullTextureCopy))
 			{
 				BeginIndent();
 					Draw("stateLimit", "The amount of times this texture can have its paint operations undone.");
 				EndIndent();
 			}
-			DrawSaveName();
+			DrawSaveName(tgts);
 
 			Separator();
 
-			DrawSize();
-			DrawTexture();
+			DrawSize(tgts);
+			DrawTexture(tgts);
 			Draw("color", "When activated or cleared, this paintable texture will be given this color.\n\nNOTE: If Texture is set, then each pixel RGBA value will be multiplied/tinted by this color.");
 
 			Separator();
 
-			expandAdvanced = EditorGUILayout.Foldout(expandAdvanced, "Advanced");
-
-			if (expandAdvanced == true)
+			if (DrawFoldout("Advanced", "Show advanced settings?") == true)
 			{
 				BeginIndent();
 					Draw("format", "The format of the created texture.");
@@ -1350,7 +1375,7 @@ namespace PaintIn3D
 					Draw("aniso", "The anisoLevel of the created texture.\n\nAuto = Copied from the Texture.");
 					Draw("wrapU", "The wrapModeU of the created texture.\n\nAuto = Copied from the Texture.");
 					Draw("wrapV", "The wrapModeV of the created texture.\n\nAuto = Copied from the Texture.");
-					Draw("existing", "If Texture is none/null and the Slot texture is not null/null when this component activates, what should happen?\n\nIgnore = Nothing will happen.\n\nUse = This paintable texture will activate with the Slot texture.\n\nUseAndKeep = The same as Use, but the Slot texture will also be stored in the Texture setting.");
+					Draw("existing", "If this component's Texture setting is none/null but the Slot texture is not none/null when this component activates, what should happen?\n\nIgnore = Nothing will happen.\n\nUse = This paintable texture will activate with the Slot texture.\n\nUseAndKeep = The same as Use, but the Slot texture will also be stored in the Texture setting.");
 					Draw("conversion", "If you're painting special textures then they may need to be converted before use.\n\nNormal = Convert texture to be a normal map.\n\nPremultiply = Premultiply the RGB values.");
 					DrawLocalMask();
 					Draw("shaderKeyword", "Some shaders require specific shader keywords to be enabled when adding new textures. If there is no texture in your selected slot then you may need to set this keyword.");
@@ -1358,9 +1383,9 @@ namespace PaintIn3D
 				EndIndent();
 			}
 
-			if (Any(t => t.Conversion != P3dPaintableTexture.ConversionType.Normal && (t.Slot.Name.Contains("Bump") == true || t.Slot.Name.Contains("Normal") == true)))
+			if (Any(tgts, t => t.Conversion != P3dPaintableTexture.ConversionType.Normal && (t.Slot.Name.Contains("Bump") == true || t.Slot.Name.Contains("Normal") == true)))
 			{
-				EditorGUILayout.HelpBox("If you're painting a normal map, then you should enable the Normal setting in the advanced menu.", MessageType.Warning);
+				Warning("If you're painting a normal map, then you should enable the Normal setting in the advanced menu.");
 			}
 		}
 
@@ -1376,7 +1401,7 @@ namespace PaintIn3D
 			EditorGUILayout.EndHorizontal();
 		}
 
-		private void DrawSaveName()
+		private void DrawSaveName(TARGET[] tgts)
 		{
 			/*
 			var rect  = P3dHelper.Reserve();
@@ -1398,7 +1423,7 @@ namespace PaintIn3D
 			EndDisabled();
 			*/
 			Draw("saveLoad", "This allows you to control how this texture is loaded and saved.\n\nManual = You must manually call Save(SaveName) and Load(SaveName) from code.\n\nAutomatic = Save(SaveName) is called in Deactivate/OnDestroy, and Load(SaveName) is called in Activate.\n\nSemiManual = You can manually call the Save() and Load() methods from code or editor event, and the current SaveName will be used.");
-			if (Any(t => t.SaveLoad != P3dPaintableTexture.SaveLoadType.Manual))
+			if (Any(tgts, t => t.SaveLoad != P3dPaintableTexture.SaveLoadType.Manual))
 			{
 				EditorGUI.indentLevel++;
 					Draw("saveName", "If you want this texture to automatically save & load, then you can set the unique save name for it here.\n\nNOTE: This name should be unique, so this setting won't work properly with prefab spawning since all clones will share the same SaveName.");
@@ -1406,7 +1431,7 @@ namespace PaintIn3D
 			}
 		}
 
-		private void DrawSize()
+		private void DrawSize(TARGET[] tgts)
 		{
 			var rect  = P3dHelper.Reserve();
 			var rectL = rect; rectL.width = EditorGUIUtility.labelWidth;
@@ -1422,17 +1447,17 @@ namespace PaintIn3D
 			EditorGUI.PropertyField(rectW, serializedObject.FindProperty("width"), GUIContent.none);
 			EditorGUI.PropertyField(rectH, serializedObject.FindProperty("height"), GUIContent.none);
 
-			BeginDisabled(All(CannotScale));
+			BeginDisabled(All(tgts, CannotScale));
 				if (GUI.Button(rectR, new GUIContent("Copy", "Copy the width and height from the current slot?"), EditorStyles.miniButton) == true)
 				{
 					Undo.RecordObjects(targets, "Copy Sizes");
 
-					Each(t => t.CopySize(), true);
+					Each(tgts, t => t.CopySize(), true);
 				}
 			EndDisabled();
 		}
 
-		private void DrawTexture()
+		private void DrawTexture(TARGET[] tgts)
 		{
 			var rect  = P3dHelper.Reserve();
 			var rectL = rect; rectL.xMax -= 50;
@@ -1440,12 +1465,12 @@ namespace PaintIn3D
 
 			EditorGUI.PropertyField(rectL, serializedObject.FindProperty("texture"), new GUIContent("Texture", "When activated or cleared, this paintable texture will be given this texture, and then multiplied/tinted by the Color.\n\nNone = White."));
 
-			BeginDisabled(All(CannotCopyTexture));
+			BeginDisabled(All(tgts, CannotCopyTexture));
 				if (GUI.Button(rectR, new GUIContent("Copy", "Copy the texture from the current slot?"), EditorStyles.miniButton) == true)
 				{
 					Undo.RecordObjects(targets, "Copy Textures");
 
-					Each(t => t.CopyTexture(), true);
+					Each(tgts, t => t.CopyTexture(), true);
 				}
 			EndDisabled();
 		}

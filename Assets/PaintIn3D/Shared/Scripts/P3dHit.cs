@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace PaintIn3D
 {
-	/// <summary>This struct stores information from a <b>RaycastHit</b>.</summary>
+	/// <summary>This stores information about a scene point on a mesh. This is usually generated from a <b>RaycastHit</b>, but it can also be filled manually.</summary>
 	public struct P3dHit
 	{
 		public P3dHit(RaycastHit hit)

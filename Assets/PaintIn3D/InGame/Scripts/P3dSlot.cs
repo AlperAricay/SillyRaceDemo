@@ -61,6 +61,29 @@ namespace PaintIn3D
 			return null;
 		}
 
+		public bool IsTransformed(GameObject gameObject)
+		{
+			if (gameObject != null)
+			{
+				var paintable = gameObject.GetComponentInParent<P3dPaintable>();
+
+				if (paintable != null)
+				{
+					var material = P3dHelper.GetMaterial(paintable.CachedRenderer, Index);
+
+					if (material != null)
+					{
+						if (material.GetTextureScale(Name) != Vector2.one || material.GetTextureOffset(Name) != Vector2.zero)
+						{
+							return true;
+						}
+					}
+				}
+			}
+
+			return false;
+		}
+
 		public override bool Equals(object obj)
 		{
 			return base.Equals(obj);
@@ -115,7 +138,7 @@ namespace PaintIn3D
 				}
 			}
 
-			P3dHelper.BeginColor(missing);
+			P3dEditor.BeginError(missing);
 			{
 				EditorGUI.LabelField(rectA, label);
 
@@ -189,7 +212,7 @@ namespace PaintIn3D
 					menu.DropDown(rectD);
 				}
 			}
-			P3dHelper.EndColor();
+			P3dEditor.EndError();
 		}
 	}
 }

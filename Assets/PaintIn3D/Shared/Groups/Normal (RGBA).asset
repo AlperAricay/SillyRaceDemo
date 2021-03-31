@@ -137,49 +137,41 @@ MonoBehaviour:
     _NormalMap@HDRP/Lit
 
     _BumpMap@Paint
-    in 3D/P3D Alpha
+    in 3D/Alpha
 
-    _BumpMap@Paint in 3D/P3D Overlay
+    _BumpMap@Paint in 3D/Overlay
 
-    _BumpMap@Paint in
-    3D/P3D Solid
-
-    _NORMAL_MAP@Shader Graphs/ArnoldStandardSurface
+    _BumpMap@Paint in 3D/Solid
 
     _NORMAL_MAP@Shader
-    Graphs/ArnoldStandardSurfaceTransparent
+    Graphs/ArnoldStandardSurface
 
-    _BumpMap@Shader Graphs/P3D Alpha
-    SRP
-
-    _BumpMap@Shader Graphs/P3D Overlay SRP
-
-    _BumpMap@Shader Graphs/P3D
-    Solid SRP
-
-    _BUMP_MAP@Shader Graphs/PhysicalMaterial3DsMax
+    _NORMAL_MAP@Shader Graphs/ArnoldStandardSurfaceTransparent
 
     _BUMP_MAP@Shader
-    Graphs/PhysicalMaterial3DsMaxTransparent
+    Graphs/PhysicalMaterial3DsMax
 
-    _NormalMap@Universal Render Pipeline/2D/Sprite-Lit-Default
+    _BUMP_MAP@Shader Graphs/PhysicalMaterial3DsMaxTransparent
 
-    _BumpMap@Universal
-    Render Pipeline/Autodesk Interactive/Autodesk Interactive
+    _NormalMap@Universal
+    Render Pipeline/2D/Sprite-Lit-Default
 
-    _BumpMap@Universal
-    Render Pipeline/Autodesk Interactive/Autodesk Interactive Masked
+    _BumpMap@Universal Render Pipeline/Autodesk
+    Interactive/Autodesk Interactive
 
-    _BumpMap@Universal
-    Render Pipeline/Autodesk Interactive/Autodesk Interactive Transparent
+    _BumpMap@Universal Render Pipeline/Autodesk
+    Interactive/Autodesk Interactive Masked
 
-    _BumpMap@Universal
-    Render Pipeline/Baked Lit
+    _BumpMap@Universal Render Pipeline/Autodesk
+    Interactive/Autodesk Interactive Transparent
+
+    _BumpMap@Universal Render Pipeline/Baked
+    Lit
 
     _BumpMap@Universal Render Pipeline/Lit
 
-    _BumpMap@Universal
-    Render Pipeline/Nature/SpeedTree7
+    _BumpMap@Universal Render
+    Pipeline/Nature/SpeedTree7
 
     _BumpMap@Universal Render Pipeline/Nature/SpeedTree7
     Billboard

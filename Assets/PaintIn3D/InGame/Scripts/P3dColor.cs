@@ -1,13 +1,13 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
 
-namespace PaintIn3D.Examples
+namespace PaintIn3D
 {
-	/// <summary>This component allows you to define a color that can later be counted from the P3dColorCounter component.
-	/// NOTE: Put this component its own GameObject, so you can give it a unique name.</summary>
+	/// <summary>This component allows you to define a color that can later be counted from the <b>P3dColorCounter</b> component.
+	/// NOTE: You should put this component its own GameObject, so you can give it a unique name.</summary>
 	[HelpURL(P3dHelper.HelpUrlPrefix + "P3dColor")]
-	[AddComponentMenu(P3dHelper.ComponentMenuPrefix + "Examples/Color")]
-	public class P3dColor : P3dLinkedBehaviour<P3dColor>
+	[AddComponentMenu(P3dHelper.ComponentMenuPrefix + "Color")]
+	public class P3dColor : MonoBehaviour
 	{
 		[SerializeField]
 		private class Contribution
@@ -21,6 +21,9 @@ namespace PaintIn3D.Examples
 
 		[SerializeField]
 		private List<Contribution> contributions;
+
+		/// <summary>This stores all active and enabled instances in the open scenes.</summary>
+		public static LinkedList<P3dColor> Instances { get { return instances; } } private static LinkedList<P3dColor> instances = new LinkedList<P3dColor>(); private LinkedListNode<P3dColor> instancesNode;
 
 		/// <summary>This tells you how many pixels this color could be painted on.</summary>
 		public int Total
@@ -82,6 +85,16 @@ namespace PaintIn3D.Examples
 			}
 		}
 
+		protected virtual void OnEnable()
+		{
+			instancesNode = instances.AddLast(this);
+		}
+
+		protected virtual void OnDisable()
+		{
+			instances.Remove(instancesNode); instancesNode = null;
+		}
+
 		public void Contribute(P3dColorCounter counter, int solid)
 		{
 			var contribution = default(Contribution);
@@ -126,27 +139,30 @@ namespace PaintIn3D.Examples
 }
 
 #if UNITY_EDITOR
-namespace PaintIn3D.Examples
+namespace PaintIn3D
 {
 	using UnityEditor;
+	using TARGET = P3dColor;
 
-	[CustomEditor(typeof(P3dColor))]
-	public class P3dColor_Editor : P3dEditor<P3dColor>
+	[CustomEditor(typeof(TARGET))]
+	public class P3dColor_Editor : P3dEditor
 	{
 		protected override void OnInspector()
 		{
+			TARGET tgt; TARGET[] tgts; GetTargets(out tgt, out tgts);
+
 			Draw("color", "The color associated with this component and GameObject name.");
 
 			EditorGUILayout.Separator();
 
 			EditorGUI.BeginDisabledGroup(true);
-				EditorGUILayout.IntField(new GUIContent("Total", "This tells you how many pixels this color could be painted on."), Target.Total);
+				EditorGUILayout.IntField(new GUIContent("Total", "This tells you how many pixels this color could be painted on."), tgt.Total);
 				var rect  = P3dHelper.Reserve();
 				var rectL = rect; rectL.xMax -= (rect.width - EditorGUIUtility.labelWidth) / 2 + 1;
 				var rectR = rect; rectR.xMin = rectL.xMax + 2;
 
-				EditorGUI.IntField(rectL, new GUIContent("Solid", "This tells you how many pixels this color has been painted on."), Target.Solid);
-				EditorGUI.ProgressBar(rectR, Target.Ratio, "Ratio");
+				EditorGUI.IntField(rectL, new GUIContent("Solid", "This tells you how many pixels this color has been painted on."), tgt.Solid);
+				EditorGUI.ProgressBar(rectR, tgt.Ratio, "Ratio");
 			EditorGUI.EndDisabledGroup();
 		}
 	}

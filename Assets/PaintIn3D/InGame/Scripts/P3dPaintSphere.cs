@@ -4,7 +4,7 @@ namespace PaintIn3D
 {
 	/// <summary>This allows you to paint a sphere at a hit point. Hit points will automatically be sent by any <b>P3dHit___</b> component on this GameObject, or its ancestors.</summary>
 	[HelpURL(P3dHelper.HelpUrlPrefix + "P3dPaintSphere")]
-	[AddComponentMenu(P3dHelper.ComponentMenuPrefix + "Paint/Paint Sphere")]
+	[AddComponentMenu(P3dHelper.ComponentHitMenuPrefix + "Paint Sphere")]
 	public class P3dPaintSphere : MonoBehaviour, IHit, IHitPoint, IHitLine, IHitTriangle, IHitQuad, IHitCoord
 	{
 		/// <summary>Only the P3dModel/P3dPaintable GameObjects whose layers are within this mask will be eligible for painting.</summary>
@@ -19,8 +19,8 @@ namespace PaintIn3D
 		/// <summary>If this is set, then only the specified P3dPaintableTexture will be painted, regardless of the layer or group setting.</summary>
 		public P3dPaintableTexture TargetTexture { set { targetTexture = value; } get { return targetTexture; } } [SerializeField] private P3dPaintableTexture targetTexture;
 
-		/// <summary>This component will paint using this blending mode.
-		/// NOTE: See <b>P3dBlendMode</b> documentation for more information.</summary>
+		/// <summary>This allows you to choose how the paint from this component will combine with the existing pixels of the textures you paint.
+		/// NOTE: See the <b>Blend Mode</b> section of the documentation for more information.</summary>
 		public P3dBlendMode BlendMode { set { blendMode = value; } get { return blendMode; } } [SerializeField] private P3dBlendMode blendMode = P3dBlendMode.AlphaBlend(Vector4.one);
 
 		/// <summary>The color of the paint.</summary>
@@ -41,7 +41,7 @@ namespace PaintIn3D
 		public float Radius { set { radius = value; } get { return radius; } } [SerializeField] private float radius = 0.1f;
 
 		/// <summary>The hardness of the paint brush.</summary>
-		public float Hardness { set { hardness = value; } get { return hardness; } } [SerializeField] private float hardness = 1.0f;
+		public float Hardness { set { hardness = value; } get { return hardness; } } [SerializeField] private float hardness = 5.0f;
 
 		/// <summary>This allows you to apply a tiled detail texture to your decals. This tiling will be applied in world space using triplanar mapping.</summary>
 		public Texture TileTexture { set { tileTexture = value; } get { return tileTexture; } } [SerializeField] private Texture tileTexture;
@@ -249,36 +249,24 @@ namespace PaintIn3D
 namespace PaintIn3D
 {
 	using UnityEditor;
+	using TARGET = P3dPaintSphere;
 
 	[CanEditMultipleObjects]
-	[CustomEditor(typeof(P3dPaintSphere))]
-	public class P3dClickToPaintSphere_Editor : P3dEditor<P3dPaintSphere>
+	[CustomEditor(typeof(TARGET))]
+	public class P3dClickToPaintSphere_Editor : P3dEditor
 	{
-		private bool expandLayers;
-		private bool expandGroups;
-
 		protected override void OnInspector()
 		{
-			BeginError(Any(t => t.Layers == 0 && t.TargetModel == null));
-				DrawExpand(ref expandLayers, "layers", "Only the P3dModel/P3dPaintable GameObjects whose layers are within this mask will be eligible for painting.");
+			TARGET tgt; TARGET[] tgts; GetTargets(out tgt, out tgts);
+
+			BeginError(Any(tgts, t => t.Layers == 0 && t.TargetModel == null));
+				Draw("layers", "Only the P3dModel/P3dPaintable GameObjects whose layers are within this mask will be eligible for painting.");
 			EndError();
-			if (expandLayers == true || Any(t => t.TargetModel != null))
-			{
-				BeginIndent();
-					Draw("targetModel", "If this is set, then only the specified P3dModel/P3dPaintable will be painted, regardless of the layer setting.");
-				EndIndent();
-			}
-			DrawExpand(ref expandGroups, "group", "Only the P3dPaintableTexture components with a matching group will be painted by this component.");
-			if (expandGroups == true || Any(t => t.TargetTexture != null))
-			{
-				BeginIndent();
-					Draw("targetTexture", "If this is set, then only the specified P3dPaintableTexture will be painted, regardless of the layer or group setting.");
-				EndIndent();
-			}
+			Draw("group", "Only the P3dPaintableTexture components with a matching group will be painted by this component.");
 
 			Separator();
 
-			Draw("blendMode", "This component will paint using this blending mode.\n\nNOTE: See P3dBlendMode documentation for more information.");
+			Draw("blendMode", "This allows you to choose how the paint from this component will combine with the existing pixels of the textures you paint.\n\nNOTE: See the Blend Mode section of the documentation for more information.");
 			Draw("color", "The color of the paint.");
 			Draw("opacity", "The opacity of the brush.");
 
@@ -291,14 +279,24 @@ namespace PaintIn3D
 
 			Separator();
 
-			Draw("tileTexture", "This allows you to apply a tiled detail texture to your decals. This tiling will be applied in world space using triplanar mapping.");
-			Draw("tileTransform", "This allows you to adjust the tiling position + rotation + scale using a Transform.");
-			Draw("tileOpacity", "This allows you to control the triplanar influence.\n\n0 = No influence.\n\n1 = Full influence.");
-			Draw("tileTransition", "This allows you to control how quickly the triplanar mapping transitions between the X/Y/Z planes.");
+			if (DrawFoldout("Advanced", "Show advanced settings?") == true)
+			{
+				BeginIndent();
+					Draw("targetModel", "If this is set, then only the specified P3dModel/P3dPaintable will be painted, regardless of the layer setting.");
+					Draw("targetTexture", "If this is set, then only the specified P3dPaintableTexture will be painted, regardless of the layer or group setting.");
+
+					Separator();
+
+					Draw("tileTexture", "This allows you to apply a tiled detail texture to your decals. This tiling will be applied in world space using triplanar mapping.");
+					Draw("tileTransform", "This allows you to adjust the tiling position + rotation + scale using a Transform.");
+					Draw("tileOpacity", "This allows you to control the triplanar influence.\n\n0 = No influence.\n\n1 = Full influence.");
+					Draw("tileTransition", "This allows you to control how quickly the triplanar mapping transitions between the X/Y/Z planes.");
+				EndIndent();
+			}
 
 			Separator();
 
-			Target.Modifiers.DrawEditorLayout(serializedObject, target, "Color", "Opacity", "Radius", "Hardness", "Position");
+			tgt.Modifiers.DrawEditorLayout(serializedObject, target, "Color", "Opacity", "Radius", "Hardness", "Position");
 		}
 	}
 }

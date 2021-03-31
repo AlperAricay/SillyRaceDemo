@@ -190,9 +190,10 @@ namespace PaintIn3D
 namespace PaintIn3D
 {
 	using UnityEditor;
+	using TARGET = P3dCoordCopier;
 
-	[CustomEditor(typeof(P3dCoordCopier))]
-	public class P3dCoordCopier_Editor : P3dEditor<P3dCoordCopier>
+	[CustomEditor(typeof(TARGET))]
+	public class P3dCoordCopier_Editor : P3dEditor
 	{
 		[MenuItem("CONTEXT/Mesh/Coord Copier (Paint in 3D)")]
 		public static void Create(MenuCommand menuCommand)
@@ -224,11 +225,13 @@ namespace PaintIn3D
 
 		protected override void OnInspector()
 		{
-			EditorGUILayout.HelpBox("This tool will copy the UV1 data (e.g. lightmap UVs) into UV0, so you can use it with normal painting. The fixed mesh will be placed as a child of this tool in your Project window. To use the fixed mesh, drag and drop it into your MeshFilter or SkinnedMeshRenderer.", MessageType.Info);
+			TARGET tgt; TARGET[] tgts; GetTargets(out tgt, out tgts);
+
+			Info("This tool will copy the UV1 data (e.g. lightmap UVs) into UV0, so you can use it with normal painting. The fixed mesh will be placed as a child of this tool in your Project window. To use the fixed mesh, drag and drop it into your MeshFilter or SkinnedMeshRenderer.");
 
 			Separator();
 
-			BeginError(Any(t => t.Source == null));
+			BeginError(Any(tgts, t => t.Source == null));
 				Draw("source", "The original mesh whose UV data you want to copy.");
 			EndError();
 
@@ -243,7 +246,7 @@ namespace PaintIn3D
 
 			if (Button("Generate") == true)
 			{
-				Each(t => t.Generate());
+				Each(tgts, t => t.Generate());
 			}
 		}
 	}

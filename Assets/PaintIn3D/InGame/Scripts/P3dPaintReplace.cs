@@ -4,7 +4,7 @@ namespace PaintIn3D
 {
 	/// <summary>This component implements the replace paint mode, which will replace all pixels in the specified texture.</summary>
 	[HelpURL(P3dHelper.HelpUrlPrefix + "P3dPaintReplace")]
-	[AddComponentMenu(P3dHelper.ComponentMenuPrefix + "Paint/Paint Replace")]
+	[AddComponentMenu(P3dHelper.ComponentHitMenuPrefix + "Paint Replace")]
 	public class P3dPaintReplace : MonoBehaviour, IHit, IHitCoord
 	{
 		/// <summary>Only the <b>P3dPaintableTexture</b> components with a matching group will be painted by this component.</summary>
@@ -59,13 +59,16 @@ namespace PaintIn3D
 namespace PaintIn3D
 {
 	using UnityEditor;
+	using TARGET = P3dPaintReplace;
 
 	[CanEditMultipleObjects]
-	[CustomEditor(typeof(P3dPaintReplace))]
-	public class P3dPaintReplace_Editor : P3dEditor<P3dPaintReplace>
+	[CustomEditor(typeof(TARGET))]
+	public class P3dPaintReplace_Editor : P3dEditor
 	{
 		protected override void OnInspector()
 		{
+			TARGET tgt; TARGET[] tgts; GetTargets(out tgt, out tgts);
+
 			Draw("group", "Only the P3dPaintableTexture components with a matching group will be painted by this component.");
 
 			Separator();
@@ -75,7 +78,7 @@ namespace PaintIn3D
 
 			Separator();
 
-			Target.Modifiers.DrawEditorLayout(serializedObject, target, "Color", "Texture");
+			tgt.Modifiers.DrawEditorLayout(serializedObject, target, "Color", "Texture");
 		}
 	}
 }

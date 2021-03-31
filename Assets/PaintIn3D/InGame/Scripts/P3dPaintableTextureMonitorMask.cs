@@ -144,17 +144,20 @@ namespace PaintIn3D
 namespace PaintIn3D
 {
 	using UnityEditor;
+	using TARGET = P3dPaintableTextureMonitorMask;
 
-	public class P3dPaintableTextureMonitorMask_Editor<T> : P3dPaintableTextureMonitor_Editor<T>
-		where T : P3dPaintableTextureMonitorMask
+	[CustomEditor(typeof(TARGET))]
+	public class P3dPaintableTextureMonitorMask_Editor : P3dPaintableTextureMonitor_Editor
 	{
 		protected override void OnInspector()
 		{
+			TARGET tgt; TARGET[] tgts; GetTargets(out tgt, out tgts);
+
 			base.OnInspector();
 
 			var markMaskDirty = false;
 
-			BeginError(Any(t => t.MaskMesh != null && t.MaskTexture != null));
+			BeginError(Any(tgts, t => t.MaskMesh != null && t.MaskTexture != null));
 				Draw("maskMesh", "If you want this component to accurately count pixels relative to a mask mesh, then specify it here.\n\nNOTE: For best results this should be the original mesh, NOT the seam-fixed version.");
 				
 				EditorGUILayout.BeginHorizontal();
@@ -165,7 +168,7 @@ namespace PaintIn3D
 
 			if (markMaskDirty == true)
 			{
-				Each(t => t.MarkMaskDirty());
+				Each(tgts, t => t.MarkMaskDirty());
 			}
 		}
 	}

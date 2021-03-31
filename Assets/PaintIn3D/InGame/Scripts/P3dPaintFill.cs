@@ -5,14 +5,14 @@ namespace PaintIn3D
 	/// <summary>This component implements the fill paint mode, which will modify all pixels in the specified texture in the same way.
 	/// This is useful if you want to gradually fade a texture to a specific color.</summary>
 	[HelpURL(P3dHelper.HelpUrlPrefix + "P3dPaintFill")]
-	[AddComponentMenu(P3dHelper.ComponentMenuPrefix + "Paint/Paint Fill")]
+	[AddComponentMenu(P3dHelper.ComponentHitMenuPrefix + "Paint Fill")]
 	public class P3dPaintFill : MonoBehaviour, IHit, IHitCoord
 	{
 		/// <summary>Only the <b>P3dPaintableTexture</b> components with a matching group will be painted by this component.</summary>
 		public P3dGroup Group { set { group = value; } get { return group; } } [SerializeField] private P3dGroup group;
 
-		/// <summary>This component will paint using this blending mode.
-		/// NOTE: See <b>P3dBlendMode</b> documentation for more information.</summary>
+		/// <summary>This allows you to choose how the paint from this component will combine with the existing pixels of the textures you paint.
+		/// NOTE: See the <b>Blend Mode</b> section of the documentation for more information.</summary>
 		public P3dBlendMode BlendMode { set { blendMode = value; } get { return blendMode; } } [SerializeField] private P3dBlendMode blendMode = P3dBlendMode.AlphaBlend(Vector4.one);
 
 		/// <summary>The color of the paint.</summary>
@@ -78,18 +78,21 @@ namespace PaintIn3D
 namespace PaintIn3D
 {
 	using UnityEditor;
+	using TARGET = P3dPaintFill;
 
 	[CanEditMultipleObjects]
-	[CustomEditor(typeof(P3dPaintFill))]
-	public class P3dPaintFill_Editor : P3dEditor<P3dPaintFill>
+	[CustomEditor(typeof(TARGET))]
+	public class P3dPaintFill_Editor : P3dEditor
 	{
 		protected override void OnInspector()
 		{
+			TARGET tgt; TARGET[] tgts; GetTargets(out tgt, out tgts);
+
 			Draw("group", "Only the P3dPaintableTexture components with a matching group will be painted by this component.");
 
 			Separator();
 
-			Draw("blendMode", "This component will paint using this blending mode.\n\nNOTE: See P3dBlendMode documentation for more information.");
+			Draw("blendMode", "This allows you to choose how the paint from this component will combine with the existing pixels of the textures you paint.\n\nNOTE: See the Blend Mode section of the documentation for more information.");
 			Draw("texture", "The texture of the paint.");
 			Draw("color", "The color of the paint.");
 			Draw("opacity", "The opacity of the brush.");
@@ -97,7 +100,7 @@ namespace PaintIn3D
 
 			Separator();
 
-			Target.Modifiers.DrawEditorLayout(serializedObject, target, "Color", "Opacity", "Texture");
+			tgt.Modifiers.DrawEditorLayout(serializedObject, target, "Color", "Opacity", "Texture");
 		}
 	}
 }

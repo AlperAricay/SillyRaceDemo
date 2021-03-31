@@ -147,7 +147,7 @@ namespace PaintIn3D
 		}
 
 		/// <summary>This method allows you to set the shape and rotation of the decal.
-		/// NOTE: The rotation</summary>
+		/// NOTE: The <b>rotation</b> argument is in world space, where <b>Quaternion.identity</b> means the paint faces forward on the +Z axis, and up is +Y.</summary>
 		public void SetShape(Quaternion rotation, Vector3 size, float angle)
 		{
 			if (In3D == true)

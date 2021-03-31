@@ -4,7 +4,7 @@ namespace PaintIn3D
 {
 	/// <summary>This component grabs paint hits and connected hits, mirrors the data, then re-broadcasts it.</summary>
 	[HelpURL(P3dHelper.HelpUrlPrefix + "P3dCloneMirror")]
-	[AddComponentMenu(P3dHelper.ComponentMenuPrefix + "Transform/Clone Mirror")]
+	[AddComponentMenu(P3dHelper.ComponentMenuPrefix + "Clone Mirror")]
 	public class P3dCloneMirror : P3dClone
 	{
 		/// <summary>When a decal is mirrored it will appear backwards, should it be flipped back around?</summary>
@@ -49,13 +49,16 @@ namespace PaintIn3D
 namespace PaintIn3D
 {
 	using UnityEditor;
+	using TARGET = P3dCloneMirror;
 
 	[CanEditMultipleObjects]
-	[CustomEditor(typeof(P3dCloneMirror))]
-	public class P3dCloneMirror_Editor : P3dEditor<P3dCloneMirror>
+	[CustomEditor(typeof(TARGET))]
+	public class P3dCloneMirror_Editor : P3dEditor
 	{
 		protected override void OnInspector()
 		{
+			TARGET tgt; TARGET[] tgts; GetTargets(out tgt, out tgts);
+
 			Draw("flip", "When a decal is mirrored it will appear backwards, should it be flipped back around?");
 		}
 	}

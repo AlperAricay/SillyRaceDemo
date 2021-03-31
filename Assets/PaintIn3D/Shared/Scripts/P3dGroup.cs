@@ -45,7 +45,7 @@ namespace PaintIn3D
 			var sPro      = property.FindPropertyRelative("index");
 			var groupData = P3dGroupData_Editor.GetGroupData(sPro.intValue);
 
-			P3dHelper.BeginColor(groupData == null);
+			P3dEditor.BeginError(groupData == null);
 				if (GUI.Button(position, groupData != null ? groupData.name : "MISSING: " + sPro.intValue, EditorStyles.popup) == true)
 				{
 					var menu        = new GenericMenu();
@@ -84,7 +84,7 @@ namespace PaintIn3D
 
 					menu.DropDown(position);
 				}
-			P3dHelper.EndColor();
+			P3dEditor.EndError();
 		}
 
 		private static void AddMenuItem(GenericMenu menu, P3dGroupData groupData, SerializedProperty sPro, int index)

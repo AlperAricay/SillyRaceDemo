@@ -32,7 +32,10 @@ namespace PaintIn3D
 		/// <summary>If this material is used in multiple renderers, you can specify them here. This usually happens with different LOD levels.</summary>
 		public List<Renderer> OtherRenderers { set { otherRenderers = value; } get { return otherRenderers; } } [SerializeField] private List<Renderer> otherRenderers;
 
-		/// <summary>This event will be invoked after this component is activated (usually via <b>P3dPaintable</b>).</summary>
+		/// <summary>This event will be invoked before this component is activated.</summary>
+		public UnityEvent OnActivating { get { if (onActivating == null) onActivating = new UnityEvent(); return onActivating; } } [SerializeField] private UnityEvent onActivating;
+
+		/// <summary>This event will be invoked after this component is activated.</summary>
 		public UnityEvent OnActivated { get { if (onActivated == null) onActivated = new UnityEvent(); return onActivated; } } [SerializeField] private UnityEvent onActivated;
 
 		[SerializeField]
@@ -119,6 +122,11 @@ namespace PaintIn3D
 		[ContextMenu("Activate")]
 		public void Activate()
 		{
+			if (onActivating != null)
+			{
+				onActivating.Invoke();
+			}
+
 			// Activate material cloners
 			GetComponents(materialCloners);
 
@@ -265,61 +273,69 @@ namespace PaintIn3D
 namespace PaintIn3D
 {
 	using UnityEditor;
+	using TARGET = P3dPaintable;
 
 	[CanEditMultipleObjects]
-	[CustomEditor(typeof(P3dPaintable))]
-	public class P3dPaintable_Editor : P3dEditor<P3dPaintable>
+	[CustomEditor(typeof(TARGET))]
+	public class P3dPaintable_Editor : P3dEditor
 	{
-		private bool expandAdvanced;
-
 		protected override void OnInspector()
 		{
-			if (Any(t => t.Activated == true))
+			TARGET tgt; TARGET[] tgts; GetTargets(out tgt, out tgts);
+
+			if (Any(tgts, t => t.Activated == true))
 			{
-				EditorGUILayout.HelpBox("This component has been activated.", MessageType.Info);
+				Info("This component has been activated.");
 			}
 
-			if (Any(t => t.Activated == true && Application.isPlaying == false))
+			if (Any(tgts, t => t.Activated == true && Application.isPlaying == false))
 			{
-				EditorGUILayout.HelpBox("This component shouldn't be activated during edit mode. Deactive it from the component conext menu.", MessageType.Error);
+				Error("This component shouldn't be activated during edit mode. Deactivate it from the component context menu.");
 			}
 
 			Draw("activation", "This allows you to control when this component actually activates and becomes ready for painting. You probably don't need to change this.");
 
 			Separator();
 
-			if (Any(t => t.GetComponentInChildren<P3dPaintableTexture>() == null))
+			if (Any(tgts, t => t.GetComponentInChildren<P3dPaintableTexture>() == null))
 			{
-				EditorGUILayout.HelpBox("Your paintable doesn't have any paintable textures!", MessageType.Warning);
+				Warning("Your paintable doesn't have any paintable textures!");
 			}
 
 			if (Button("Add Material Cloner") == true)
 			{
-				Each(t => t.gameObject.AddComponent<P3dMaterialCloner>());
+				Each(tgts, t => t.gameObject.AddComponent<P3dMaterialCloner>());
 			}
 
 			if (Button("Add Paintable Texture") == true)
 			{
-				Each(t => t.gameObject.AddComponent<P3dPaintableTexture>());
+				Each(tgts, t => t.gameObject.AddComponent<P3dPaintableTexture>());
 			}
 
 			if (Button("Analyze Mesh") == true)
 			{
-				P3dMeshAnalysis.OpenWith(Target.gameObject);
+				if (tgt.Prepared == true)
+				{
+					P3dMeshAnalysis.OpenWith(tgt.PreparedMesh);
+				}
+				else
+				{
+					P3dMeshAnalysis.OpenWith(tgt.gameObject);
+				}
 			}
 
 			Separator();
 
-			expandAdvanced = EditorGUILayout.Foldout(expandAdvanced, "Advanced");
-
-			if (expandAdvanced == true)
+			if (DrawFoldout("Advanced", "Show advanced settings?") == true)
 			{
-				EditorGUI.indentLevel++;
+				BeginIndent();
 					Draw("baseScale", "If you want the paintable texture width/height to be multiplied by the scale of this GameObject, this allows you to set the scale where you want the multiplier to be 1.");
 					Draw("includeScale", "Transform the mesh with its position, rotation, and scale? Some skinned mesh setups require this to be disabled.");
+					Draw("useMesh", "This allows you to choose how the Mesh attached to the current Renderer is used when painting.\n\nAsIs = Use what is currently set in the renderer.\n\nAutoSeamFix = Use (or automatically generate) a seam-fixed version of the mesh currently set in the renderer.");
 					Draw("otherRenderers", "If this material is used in multiple renderers, you can specify them here. This usually happens with different LOD levels.");
+					Draw("onActivating");
 					Draw("onActivated");
-				EditorGUI.indentLevel--;
+				EndIndent();
 			}
 		}
 	}

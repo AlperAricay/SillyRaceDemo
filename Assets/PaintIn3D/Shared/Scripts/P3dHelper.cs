@@ -8,7 +8,9 @@ namespace PaintIn3D
 	{
 		public const string HelpUrlPrefix = "http://carloswilkes.github.io/Documentation/PaintIn3D#";
 
-		public const string ComponentMenuPrefix = "Paint in 3D/";
+		public const string ComponentMenuPrefix = "Paint in 3D/P3D ";
+
+		public const string ComponentHitMenuPrefix = "Paint in 3D/Hit/P3D ";
 
 		public static System.Action<Camera> OnCameraDraw;
 
@@ -276,7 +278,7 @@ namespace PaintIn3D
 
 				P3dCommandReplace.BlitFast(halfRenderTexture, renderTexture, Color.white);
 
-				// Ping pong downsamples
+				// Ping-pong downsample
 				for (var i = 1; i < steps; i++)
 				{
 					desc.width       /= 2;

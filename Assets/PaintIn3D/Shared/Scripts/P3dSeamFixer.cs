@@ -87,6 +87,40 @@ namespace PaintIn3D
 		/// <summary>The thickness of the UV borders in the fixed mesh.</summary>
 		public float Border { set { border = value; } get { return border; } } [SerializeField] private float border = 0.005f;
 
+		private static Dictionary<Mesh, Mesh> cacheFirst   = new Dictionary<Mesh, Mesh>();
+		private static Dictionary<Mesh, Mesh> cacheSecond  = new Dictionary<Mesh, Mesh>();
+		private static Dictionary<Mesh, Mesh> cacheThird   = new Dictionary<Mesh, Mesh>();
+		private static Dictionary<Mesh, Mesh> cacheFourth  = new Dictionary<Mesh, Mesh>();
+
+		public static Mesh GetCachedMesh(Mesh source, P3dCoord coord, bool allowGeneration = true)
+		{
+			switch (coord)
+			{
+				case P3dCoord.First:  return TryGetCachedMesh(cacheFirst , source, coord, allowGeneration);
+				case P3dCoord.Second: return TryGetCachedMesh(cacheSecond, source, coord, allowGeneration);
+				case P3dCoord.Third:  return TryGetCachedMesh(cacheThird , source, coord, allowGeneration);
+				case P3dCoord.Fourth: return TryGetCachedMesh(cacheFourth, source, coord, allowGeneration);
+			}
+
+			return default(Mesh);
+		}
+
+		private static Mesh TryGetCachedMesh(Dictionary<Mesh, Mesh> cache, Mesh source, P3dCoord coord, bool allowGeneration = true)
+		{
+			var fixedMesh = default(Mesh);
+
+			if (source != null && cache.TryGetValue(source, out fixedMesh) == false && allowGeneration == true)
+			{
+				fixedMesh = new Mesh();
+
+				fixedMesh.name = source.name + " (Auto Fixed Seams)";
+
+				Generate(source, fixedMesh, coord, 0.000001f, 0.005f);
+			}
+
+			return fixedMesh;
+		}
+
 		/// <summary>This allows you to add a mesh to the seam fixer.
 		/// NOTE: You must later call <b>Generate</b> to seam fix the added meshes.</summary>
 		public void AddMesh(Mesh mesh)
@@ -605,20 +639,23 @@ namespace PaintIn3D
 namespace PaintIn3D
 {
 	using UnityEditor;
+	using TARGET = P3dSeamFixer;
 
-	[CustomEditor(typeof(P3dSeamFixer))]
-	public class P3dSeamFixer_Editor : P3dEditor<P3dSeamFixer>
+	[CustomEditor(typeof(TARGET))]
+	public class P3dSeamFixer_Editor : P3dEditor
 	{
 		/// <summary>If this is above 0 then Debug.Lines will be output during generation.</summary>
 		public static float DebugScale;
 
 		protected override void OnInspector()
 		{
+			TARGET tgt; TARGET[] tgts; GetTargets(out tgt, out tgts);
+
 			EditorGUILayout.HelpBox("This tool will convert a normal mesh into a mesh with UV seams suitable for painting. The fixed mesh will be placed as a child of this tool in your Project window. To use the fixed mesh, drag and drop it into your MeshFilter or SkinnedMeshRenderer.", MessageType.Info);
 
 			Separator();
 
-			Each(t => t.ConvertLegacy()); serializedObject.Update();
+			Each(tgts, t => t.ConvertLegacy()); serializedObject.Update();
 
 			var sMeshes = serializedObject.FindProperty("meshes");
 			var sDel    = -1;
@@ -632,7 +669,7 @@ namespace PaintIn3D
 			EditorGUILayout.EndHorizontal();
 
 			EditorGUI.indentLevel++;
-				for (var i = 0; i < Target.Meshes.Count; i++)
+				for (var i = 0; i < tgt.Meshes.Count; i++)
 				{
 					var sSource = sMeshes.GetArrayElementAtIndex(i).FindPropertyRelative("Source");
 
@@ -656,10 +693,10 @@ namespace PaintIn3D
 			Separator();
 
 			Draw("coord", "The UV channel whose seams will be fixed.");
-			BeginError(Any(t => t.Threshold <= 0.0f));
+			BeginError(Any(tgts, t => t.Threshold <= 0.0f));
 				Draw("threshold", "The threshold below which vertex UV coordinates will be snapped.");
 			EndError();
-			BeginError(Any(t => t.Border <= 0.0f));
+			BeginError(Any(tgts, t => t.Border <= 0.0f));
 				Draw("border", "The thickness of the UV borders in the fixed mesh.");
 			EndError();
 			DebugScale = EditorGUILayout.FloatField("Debug Scale", DebugScale);
@@ -668,7 +705,7 @@ namespace PaintIn3D
 
 			if (Button("Generate") == true)
 			{
-				Each(t => t.Generate());
+				Each(tgts, t => t.Generate());
 			}
 		}
 

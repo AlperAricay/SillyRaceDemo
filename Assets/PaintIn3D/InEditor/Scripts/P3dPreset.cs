@@ -27,15 +27,13 @@ namespace PaintIn3D
 				{
 					cachedPresets = new List<P3dPreset>();
 #if UNITY_EDITOR
-					var guids = UnityEditor.AssetDatabase.FindAssets("t:prefab");
+					var scriptGuid  = P3dHelper.FindScriptGUID<P3dPreset>();
 
-					foreach (var guid in guids)
+					if (scriptGuid != null)
 					{
-						var prefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>(UnityEditor.AssetDatabase.GUIDToAssetPath(guid));
-
-						if (prefab != null)
+						foreach (var prefabGuid in UnityEditor.AssetDatabase.FindAssets("t:prefab"))
 						{
-							var preset = prefab.GetComponent<P3dPreset>();
+							var preset = P3dHelper.LoadPrefabIfItContainsScriptGUID<P3dPreset>(prefabGuid, scriptGuid);
 
 							if (preset != null)
 							{
@@ -178,34 +176,37 @@ namespace PaintIn3D
 namespace PaintIn3D
 {
 	using UnityEditor;
+	using TARGET = P3dPreset;
 
 	[CanEditMultipleObjects]
-	[CustomEditor(typeof(P3dPreset))]
-	public class P3dPreset_Editor : P3dEditor<P3dPreset>
+	[CustomEditor(typeof(TARGET))]
+	public class P3dPreset_Editor : P3dEditor
 	{
 		protected override void OnInspector()
 		{
-			if (P3dPreset.CachedPresets.Contains(Target) == false && P3dHelper.IsAsset(Target) == true)
+			TARGET tgt; TARGET[] tgts; GetTargets(out tgt, out tgts);
+
+			if (P3dPreset.CachedPresets.Contains(tgt) == false && P3dHelper.IsAsset(tgt) == true)
 			{
-				P3dPreset.CachedPresets.Add(Target);
+				P3dPreset.CachedPresets.Add(tgt);
 			}
 
-			EditorGUILayout.HelpBox("You can use this preset from the Paint in 3D window after making an object paintable.", MessageType.Info);
+			Info("You can use this preset from the Paint in 3D window after making an object paintable.");
 
 			Draw("title", "This allows you to name this preset.\n\nNone/null = The GameObject name will be used.");
 			Draw("addMaterialCloner", "Automatically add the P3dMaterialCloner.");
 
-			if (AnyDrawInvalidIndex() == true)
+			if (AnyDrawInvalidIndex(tgts) == true)
 			{
-				EditorGUILayout.Separator();
+				Separator();
 
-				EditorGUILayout.HelpBox("P3dPaintableTexture slot index values should be 0 for presets, because they will be overwritten when added.", MessageType.Warning);
+				Warning("P3dPaintableTexture slot index values should be 0 for presets, because they will be overwritten when added.");
 			}
 		}
 
-		private bool AnyDrawInvalidIndex()
+		private bool AnyDrawInvalidIndex(TARGET[] tgts)
 		{
-			foreach (var T in Targets)
+			foreach (var T in tgts)
 			{
 				foreach (var paintableTexture in T.GetComponents<P3dPaintableTexture>())
 				{

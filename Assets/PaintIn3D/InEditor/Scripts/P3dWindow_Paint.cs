@@ -38,39 +38,39 @@ namespace PaintIn3D
 
 				EditorGUILayout.Separator();
 
-				P3dHelper.BeginLabelWidth(100);
+				P3dEditor.BeginLabelWidth(100);
 					DrawRadius();
-				P3dHelper.EndLabelWidth();
+				P3dEditor.EndLabelWidth();
 
 				EditorGUILayout.Separator();
 
-				P3dHelper.BeginLabelWidth(100);
+				P3dEditor.BeginLabelWidth(100);
 					DrawColor();
-				P3dHelper.EndLabelWidth();
+				P3dEditor.EndLabelWidth();
 
 				EditorGUILayout.Separator();
 
-				P3dHelper.BeginLabelWidth(100);
+				P3dEditor.BeginLabelWidth(100);
 					DrawAngle();
-				P3dHelper.EndLabelWidth();
+				P3dEditor.EndLabelWidth();
 
 				EditorGUILayout.Separator();
 
-				P3dHelper.BeginLabelWidth(100);
+				P3dEditor.BeginLabelWidth(100);
 					DrawTiling();
-				P3dHelper.EndLabelWidth();
+				P3dEditor.EndLabelWidth();
 
 				EditorGUILayout.Separator();
 
-				P3dHelper.BeginLabelWidth(100);
+				P3dEditor.BeginLabelWidth(100);
 					DrawNormal();
-				P3dHelper.EndLabelWidth();
+				P3dEditor.EndLabelWidth();
 
 				EditorGUILayout.Separator();
 
-				P3dHelper.BeginLabelWidth(100);
+				P3dEditor.BeginLabelWidth(100);
 					DrawModifiers();
-				P3dHelper.EndLabelWidth();
+				P3dEditor.EndLabelWidth();
 			GUILayout.EndScrollView();
 
 			GUILayout.FlexibleSpace();
@@ -321,15 +321,17 @@ namespace PaintIn3D
 		{
 			if (toolInstance != null)
 			{
-				foreach (var connectablePoint in toolInstance.GetComponentsInChildren<P3dConnectablePoints>())
+				/*
+				foreach (var connectablePoint in toolInstance.GetComponentsInChildren<P3dPointConnector>())
 				{
 					connectablePoint.ClearHitCache();
 				}
 
-				foreach (var connectableLine in toolInstance.GetComponentsInChildren<P3dConnectableLines>())
+				foreach (var connectableLine in toolInstance.GetComponentsInChildren<P3dLineConnector>())
 				{
 					connectableLine.ClearHitCache();
 				}
+				*/
 			}
 
 			if (materialInstance != null)

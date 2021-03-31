@@ -1,30 +1,48 @@
 ﻿#if UNITY_EDITOR
 using UnityEngine;
 using UnityEditor;
-using System.Linq;
+using System.Collections.Generic;
 
 namespace PaintIn3D
 {
-	/// <summary>This is the base class for all Paint in 3D inspectors.</summary>
-	public abstract class P3dEditor<T> : Editor
-		where T : Object
+	/// <summary>This is the base class for all inspectors.</summary>
+	public abstract class P3dEditor : Editor
 	{
-		protected T Target;
-
-		protected T[] Targets;
+		protected static SerializedObject data;
 
 		private static GUIContent customContent = new GUIContent();
 
 		private static GUIStyle expandStyle;
 
+		private static List<Color> colors = new List<Color>();
+
+		private static List<float> labelWidths = new List<float>();
+
+		public void GetTargets<T>(out T tgt, out T[] tgts)
+			where T : Object
+		{
+			tgt  = (T)target;
+			tgts = System.Array.ConvertAll(targets, item => (T)item);
+		}
+
+		public static SerializedObject Data
+		{
+			set
+			{
+				data = value;
+			}
+
+			get
+			{
+				return data;
+			}
+		}
+
 		public override void OnInspectorGUI()
 		{
-			EditorGUI.BeginChangeCheck();
+			data = serializedObject;
 
-			Target  = (T)target;
-			Targets = targets.Select(t => (T)t).ToArray();
-
-			P3dHelper.ClearStacks();
+			ClearStacks();
 
 			Separator();
 
@@ -34,11 +52,11 @@ namespace PaintIn3D
 
 			serializedObject.ApplyModifiedProperties();
 
-			if (EditorGUI.EndChangeCheck() == true)
+			if (serializedObject.hasModifiedProperties == true)
 			{
 				GUI.changed = true; Repaint();
 
-				foreach (var t in Targets)
+				foreach (var t in targets)
 				{
 					EditorUtility.SetDirty(t);
 				}
@@ -47,8 +65,6 @@ namespace PaintIn3D
 
 		public virtual void OnSceneGUI()
 		{
-			Target = (T)target;
-
 			OnScene();
 
 			if (GUI.changed == true)
@@ -57,9 +73,10 @@ namespace PaintIn3D
 			}
 		}
 
-		protected void Each(System.Action<T> update, bool dirty = false)
+		protected void Each<T>(T[] tgts, System.Action<T> update, bool dirty = false)
+			where T : Object
 		{
-			foreach (var t in Targets)
+			foreach (var t in tgts)
 			{
 				update(t);
 
@@ -70,9 +87,10 @@ namespace PaintIn3D
 			}
 		}
 
-		protected bool Any(System.Func<T, bool> check)
+		protected bool Any<T>(T[] tgts, System.Func<T, bool> check)
+			where T : Object
 		{
-			foreach (var t in Targets)
+			foreach (var t in tgts)
 			{
 				if (check(t) == true)
 				{
@@ -83,9 +101,10 @@ namespace PaintIn3D
 			return false;
 		}
 
-		protected bool All(System.Func<T, bool> check)
+		protected bool All<T>(T[] tgts, System.Func<T, bool> check)
+			where T : Object
 		{
-			foreach (var t in Targets)
+			foreach (var t in tgts)
 			{
 				if (check(t) == false)
 				{
@@ -96,29 +115,42 @@ namespace PaintIn3D
 			return true;
 		}
 
-		protected virtual void Separator()
+		public static void Info(string message)
+		{
+			EditorGUILayout.HelpBox(message, MessageType.Info);
+		}
+
+		public static void Warning(string message)
+		{
+			EditorGUILayout.HelpBox(message, MessageType.Warning);
+		}
+
+		public static void Error(string message)
+		{
+			EditorGUILayout.HelpBox(message, MessageType.Error);
+		}
+
+		public static void Separator()
 		{
 			EditorGUILayout.Separator();
 		}
 
-		protected void BeginIndent()
+		public static void BeginIndent()
 		{
 			EditorGUI.indentLevel += 1;
 		}
 
-		protected void EndIndent()
+		public static void EndIndent()
 		{
 			EditorGUI.indentLevel -= 1;
 		}
 
-		protected bool Button(string text)
+		public static bool Button(string text)
 		{
-			var rect = P3dHelper.Reserve();
-
-			return GUI.Button(rect, text);
+			return GUILayout.Button(text);
 		}
 
-		protected bool HelpButton(string helpText, UnityEditor.MessageType type, string buttonText, float buttonWidth)
+		public static bool HelpButton(string helpText, UnityEditor.MessageType type, string buttonText, float buttonWidth)
 		{
 			var clicked = false;
 
@@ -135,40 +167,100 @@ namespace PaintIn3D
 			return clicked;
 		}
 
-		protected void BeginMixed(bool mixed = true)
+		public static void ClearStacks()
+		{
+			while (colors.Count > 0)
+			{
+				EndColor();
+			}
+
+			while (labelWidths.Count > 0)
+			{
+				EndLabelWidth();
+			}
+		}
+
+		public static void BeginMixed(bool mixed = true)
 		{
 			EditorGUI.showMixedValue = mixed;
 		}
 
-		protected void EndMixed()
+		public static void EndMixed()
 		{
 			EditorGUI.showMixedValue = false;
 		}
 
-		protected void BeginDisabled(bool disabled = true)
+		public static void BeginDisabled(bool disabled = true)
 		{
 			EditorGUI.BeginDisabledGroup(disabled);
 		}
 
-		protected void EndDisabled()
+		public static void EndDisabled()
 		{
 			EditorGUI.EndDisabledGroup();
 		}
 
-		protected void BeginError(bool error = true)
+		public static void BeginError(bool error = true)
 		{
-			P3dHelper.BeginColor(error);
+			BeginColor(Color.red, error);
 		}
 
-		protected void EndError()
+		public static void EndError()
 		{
-			P3dHelper.EndColor();
+			EndColor();
 		}
 
-		protected bool DrawExpand(ref bool expand, string propertyPath, string overrideTooltip = null, string overrideText = null)
+		public static void BeginColor(Color color, bool show = true)
+		{
+			colors.Add(GUI.color);
+
+			GUI.color = show == true ? color : colors[0];
+		}
+
+		public static void EndColor()
+		{
+			if (colors.Count > 0)
+			{
+				var index = colors.Count - 1;
+
+				GUI.color = colors[index];
+
+				colors.RemoveAt(index);
+			}
+		}
+
+		public static void BeginLabelWidth(float width)
+		{
+			labelWidths.Add(EditorGUIUtility.labelWidth);
+
+			EditorGUIUtility.labelWidth = width;
+		}
+
+		public static void EndLabelWidth()
+		{
+			if (labelWidths.Count > 0)
+			{
+				var index = labelWidths.Count - 1;
+
+				EditorGUIUtility.labelWidth = labelWidths[index];
+
+				labelWidths.RemoveAt(index);
+			}
+		}
+
+		public static bool DrawFoldout(string title, string tooltip, string property = "m_Name")
+		{
+			var prop = data.FindProperty(property);
+
+			prop.isExpanded = EditorGUILayout.Foldout(prop.isExpanded, new GUIContent(title, tooltip));
+
+			return prop.isExpanded;
+		}
+
+		public static bool DrawExpand(ref bool expand, string propertyPath, string overrideTooltip = null, string overrideText = null)
 		{
 			var rect     = P3dHelper.Reserve();
-			var property = serializedObject.FindProperty(propertyPath);
+			var property = data.FindProperty(propertyPath);
 
 			customContent.text    = string.IsNullOrEmpty(overrideText   ) == false ? overrideText    : property.displayName;
 			customContent.tooltip = string.IsNullOrEmpty(overrideTooltip) == false ? overrideTooltip : property.tooltip;
@@ -192,9 +284,9 @@ namespace PaintIn3D
 			return changed;
 		}
 
-		protected bool Draw(string propertyPath, string overrideTooltip = null, string overrideText = null)
+		public static bool Draw(string propertyPath, string overrideTooltip = null, string overrideText = null)
 		{
-			var property = serializedObject.FindProperty(propertyPath);
+			var property = data.FindProperty(propertyPath);
 
 			customContent.text    = string.IsNullOrEmpty(overrideText   ) == false ? overrideText    : property.displayName;
 			customContent.tooltip = string.IsNullOrEmpty(overrideTooltip) == false ? overrideTooltip : property.tooltip;
@@ -206,9 +298,9 @@ namespace PaintIn3D
 			return EditorGUI.EndChangeCheck();
 		}
 
-		protected bool DrawMinMax(string propertyPath, float min, float max, string overrideTooltip = null, string overrideText = null)
+		public static bool DrawMinMax(string propertyPath, float min, float max, string overrideTooltip = null, string overrideText = null)
 		{
-			var property = serializedObject.FindProperty(propertyPath);
+			var property = data.FindProperty(propertyPath);
 			var value    = property.vector2Value;
 
 			customContent.text    = string.IsNullOrEmpty(overrideText   ) == false ? overrideText    : property.displayName;

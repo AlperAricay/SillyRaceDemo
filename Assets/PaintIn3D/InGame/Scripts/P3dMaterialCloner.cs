@@ -188,38 +188,41 @@ namespace PaintIn3D
 namespace PaintIn3D
 {
 	using UnityEditor;
+	using TARGET = P3dMaterialCloner;
 
 	[CanEditMultipleObjects]
-	[CustomEditor(typeof(P3dMaterialCloner))]
-	public class P3dMaterialCloner_Editor : P3dEditor<P3dMaterialCloner>
+	[CustomEditor(typeof(TARGET))]
+	public class P3dMaterialCloner_Editor : P3dEditor
 	{
 		private bool expandIndex;
 
 		protected override void OnInspector()
 		{
-			if (Any(t => t.Activated == true))
+			TARGET tgt; TARGET[] tgts; GetTargets(out tgt, out tgts);
+
+			if (Any(tgts, t => t.Activated == true))
 			{
-				EditorGUILayout.HelpBox("This component has been activated.", MessageType.Info);
+				Info("This component has been activated.");
 			}
 
-			if (Any(t => t.Activated == true && Application.isPlaying == false))
+			if (Any(tgts, t => t.Activated == true && Application.isPlaying == false))
 			{
-				EditorGUILayout.HelpBox("This component shouldn't be activated during edit mode. Deactive it from the component conext menu.", MessageType.Error);
+				Error("This component shouldn't be activated during edit mode. Deactivate it from the component context menu.");
 			}
 
-			if (Any(t => t.Activated == false && t.CachedPaintable.Activated == true))
+			if (Any(tgts, t => t.Activated == false && t.CachedPaintable.Activated == true))
 			{
-				EditorGUILayout.HelpBox("This component isn't activated, but the P3dPaintable has been, so you must manually activate this.", MessageType.Warning);
+				Warning("This component isn't activated, but the P3dPaintable has been, so you must manually activate this.");
 			}
 
-			BeginError(Any(t => t.Index < 0 || t.Index >= t.GetComponent<Renderer>().sharedMaterials.Length));
+			BeginError(Any(tgts, t => t.Index < 0 || t.Index >= t.GetComponent<Renderer>().sharedMaterials.Length));
 				DrawExpand(ref expandIndex, "index", "The material index that will be cloned. This matches the Materials list in your MeshRenderer/SkinnedMeshRenderer, where 0 is the first material.");
 			EndError();
 			if (expandIndex == true)
 			{
 				BeginIndent();
 					BeginDisabled();
-						EditorGUILayout.ObjectField(new GUIContent("Material", "This is the current material at the specified material index."), P3dHelper.GetMaterial(Target.CachedRenderer, Target.Index), typeof(Material), false);
+						EditorGUILayout.ObjectField(new GUIContent("Material", "This is the current material at the specified material index."), P3dHelper.GetMaterial(tgt.CachedRenderer, tgt.Index), typeof(Material), false);
 					EndDisabled();
 				EndIndent();
 			}

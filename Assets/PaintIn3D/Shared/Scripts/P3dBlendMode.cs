@@ -145,10 +145,11 @@ namespace PaintIn3D
 		public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
 		{
 			var index  = property.FindPropertyRelative("Index").intValue;
+			var sCha   = property.FindPropertyRelative("Channels");
 			var height = base.GetPropertyHeight(property, label);
 			var step   = height + 2;
 
-			height += step;
+			height += EditorGUI.GetPropertyHeight(sCha, label) + 2;
 
 			if (index == P3dBlendMode.REPLACE_CUSTOM)
 			{
