@@ -35,9 +35,19 @@ public class OpponentController : MonoBehaviour, IRunner
         Username = "Bot " + Random.Range(1, 9999);
         CurrentCheckpointIndex = 0;
         _rb = GetComponent<Rigidbody>();
+        _rb.sleepThreshold = 0.0f;
         _capsuleCollider = GetComponent<CapsuleCollider>();
         _anim = GetComponent<Animator>();
         CurrentCheckpointIndex = 0;
+        
+        var rigidBodies=GetComponentsInChildren(typeof(Rigidbody));
+        for (var i = 1; i < rigidBodies.Length; i++)
+        {
+            var component = rigidBodies[i];
+            if (!(component is Rigidbody rb)) continue;
+            _rigidbodiesList.Add(rb);
+            if (rb.TryGetComponent<Collider>(out var coll)) _rigidbodyCollidersList.Add(coll);
+        }
     }
 
     private void Start()
@@ -110,7 +120,6 @@ public class OpponentController : MonoBehaviour, IRunner
 
             if (!newValue)
             {
-                GameManager.Instance.thirdPersonCamera.m_Follow = transform;
                 _anim.SetTrigger(Stand);
                 //move transform close to hip
                 var lowerSphere = _anim.GetBoneTransform(HumanBodyBones.Hips).position + transform.up * (_capsuleCollider.radius + Physics.defaultContactOffset);

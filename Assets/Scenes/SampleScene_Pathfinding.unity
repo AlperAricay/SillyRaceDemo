@@ -1562,7 +1562,7 @@ MonoBehaviour:
   async: 1
   downsampleSteps: 2
   registeredPaintableTexture: {fileID: 454476521}
-  cooldown: -178.46133
+  cooldown: -192.43272
   currentReader:
     requested: 0
     buffer: {fileID: 0}
@@ -8124,7 +8124,7 @@ Rigidbody:
   m_IsKinematic: 0
   m_Interpolate: 0
   m_Constraints: 112
-  m_CollisionDetection: 0
+  m_CollisionDetection: 1
 --- !u!114 &919132148135833003
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8769,7 +8769,7 @@ Rigidbody:
   m_IsKinematic: 0
   m_Interpolate: 0
   m_Constraints: 112
-  m_CollisionDetection: 0
+  m_CollisionDetection: 1
 --- !u!114 &3084323833430860184
 MonoBehaviour:
   m_ObjectHideFlags: 0

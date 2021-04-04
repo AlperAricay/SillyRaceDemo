@@ -71,11 +71,9 @@ public class PlayerController : MonoBehaviour, IRunner
         for (var i = 1; i < rigidBodies.Length; i++)
         {
             var component = rigidBodies[i];
-            if (component is Rigidbody rb)
-            {
-                _rigidbodiesList.Add(rb);
-                if (rb.TryGetComponent<Collider>(out var coll)) _rigidbodyCollidersList.Add(coll);
-            }
+            if (!(component is Rigidbody rb)) continue;
+            _rigidbodiesList.Add(rb);
+            if (rb.TryGetComponent<Collider>(out var coll)) _rigidbodyCollidersList.Add(coll);
         }
     }
 

@@ -38,10 +38,10 @@
       <option value="$PROJECT_DIR$/Assets/StandBehaviour.cs" />
       <option value="$PROJECT_DIR$/Assets/Scripts/P3dChangeCounterText.cs" />
       <option value="$PROJECT_DIR$/Assets/Scripts/FinishLine.cs" />
-      <option value="$PROJECT_DIR$/Assets/Scripts/PlayerController.cs" />
       <option value="$PROJECT_DIR$/Assets/Scripts/EnvironmentUpdater.cs" />
       <option value="$PROJECT_DIR$/Assets/Scripts/GameManager.cs" />
       <option value="$PROJECT_DIR$/Assets/Scripts/AstarAI.cs" />
+      <option value="$PROJECT_DIR$/Assets/Scripts/PlayerController.cs" />
       <option value="$PROJECT_DIR$/Assets/Scripts/OpponentController.cs" />
     </changedPaths>
   </component>
@@ -91,7 +91,7 @@
       <workItem from="1617202086827" duration="8960000" />
       <workItem from="1617462246795" duration="634000" />
       <workItem from="1617532056108" duration="612000" />
-      <workItem from="1617534586592" duration="4441000" />
+      <workItem from="1617534586592" duration="7001000" />
     </task>
     <servers />
   </component>
