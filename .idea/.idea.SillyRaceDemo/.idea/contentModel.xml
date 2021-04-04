@@ -387,6 +387,7 @@
         <e p="readme.txt" t="Include" />
         <e p="Readme_upgrading.txt" t="Include" />
         <e p="Scripts" t="Include">
+          <e p="AstarAI.cs" t="Include" />
           <e p="Checkpoint.cs" t="Include" />
           <e p="FinishLine.cs" t="Include" />
           <e p="GameManager.cs" t="Include" />

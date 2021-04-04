@@ -8,12 +8,14 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="HighlightingSettingsPerFile">
-    <setting file="file://$PROJECT_DIR$/Assets/Scripts/Interfaces/IImpulse.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/Scripts/Jumper.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/Scripts/Checkpoint.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Assets/Scripts/OpponentController.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/C7E96583-A03D-4DDF-A10C-236D61B93EDA/49/662dbd06/CharacterController.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Assets/Scripts/AstarAI.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Assets/Scripts/Interfaces/IImpulse.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/Scripts/KillerCollider.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/Scripts/P3dChangeCounterText.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/Assets/Scripts/OpponentController.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/Scripts/FinishLine.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/Scripts/Interfaces/IRunner.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/Scripts/GameManager.cs" root0="FORCE_HIGHLIGHTING" />
@@ -33,13 +35,14 @@
       <option value="$PROJECT_DIR$/Assets/Scripts/TosserCollider.cs" />
       <option value="$PROJECT_DIR$/Assets/Scripts/KillerCollider.cs" />
       <option value="$PROJECT_DIR$/Assets/Scripts/Interfaces/IRunner.cs" />
-      <option value="$PROJECT_DIR$/Assets/Scripts/OpponentController.cs" />
       <option value="$PROJECT_DIR$/Assets/StandBehaviour.cs" />
       <option value="$PROJECT_DIR$/Assets/Scripts/P3dChangeCounterText.cs" />
       <option value="$PROJECT_DIR$/Assets/Scripts/FinishLine.cs" />
       <option value="$PROJECT_DIR$/Assets/Scripts/PlayerController.cs" />
       <option value="$PROJECT_DIR$/Assets/Scripts/EnvironmentUpdater.cs" />
       <option value="$PROJECT_DIR$/Assets/Scripts/GameManager.cs" />
+      <option value="$PROJECT_DIR$/Assets/Scripts/AstarAI.cs" />
+      <option value="$PROJECT_DIR$/Assets/Scripts/OpponentController.cs" />
     </changedPaths>
   </component>
   <component name="ProjectId" id="1qNviXLu7KWyPjDRu3dN6xfiYHc" />
@@ -88,7 +91,7 @@
       <workItem from="1617202086827" duration="8960000" />
       <workItem from="1617462246795" duration="634000" />
       <workItem from="1617532056108" duration="612000" />
-      <workItem from="1617534586592" duration="956000" />
+      <workItem from="1617534586592" duration="4441000" />
     </task>
     <servers />
   </component>
