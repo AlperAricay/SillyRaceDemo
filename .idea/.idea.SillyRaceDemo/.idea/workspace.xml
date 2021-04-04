@@ -11,10 +11,13 @@
     <setting file="file://$PROJECT_DIR$/Assets/Scripts/Interfaces/IImpulse.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/Scripts/Jumper.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/Scripts/Checkpoint.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Assets/Scripts/KillerCollider.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/Scripts/P3dChangeCounterText.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/Scripts/OpponentController.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/Scripts/FinishLine.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Assets/Scripts/Interfaces/IRunner.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/Scripts/GameManager.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Assets/Scripts/PlayerController.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/Scripts/TosserCollider.cs" root0="FORCE_HIGHLIGHTING" />
   </component>
   <component name="IdeDocumentHistory">
@@ -35,6 +38,7 @@
       <option value="$PROJECT_DIR$/Assets/Scripts/FinishLine.cs" />
       <option value="$PROJECT_DIR$/Assets/Scripts/PlayerController.cs" />
       <option value="$PROJECT_DIR$/Assets/Scripts/GameManager.cs" />
+      <option value="$PROJECT_DIR$/Assets/Scripts/EnvironmentUpdater.cs" />
     </changedPaths>
   </component>
   <component name="ProjectId" id="1qNviXLu7KWyPjDRu3dN6xfiYHc" />
@@ -80,7 +84,9 @@
       <workItem from="1616932996485" duration="14240000" />
       <workItem from="1617037809406" duration="1012000" />
       <workItem from="1617111308397" duration="20800000" />
-      <workItem from="1617202086827" duration="8372000" />
+      <workItem from="1617202086827" duration="8960000" />
+      <workItem from="1617462246795" duration="634000" />
+      <workItem from="1617532056108" duration="612000" />
     </task>
     <servers />
   </component>

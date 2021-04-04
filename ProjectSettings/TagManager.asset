@@ -3,7 +3,8 @@
 --- !u!78 &1
 TagManager:
   serializedVersion: 2
-  tags: []
+  tags:
+  - SteeringPerceiver
   layers:
   - Default
   - TransparentFX
@@ -17,9 +18,9 @@ TagManager:
   - Obstacle
   - Ragdoll
   - Player
-  - 
-  - 
-  - 
+  - Bot
+  - Interest
+  - Walls
   - 
   - 
   - 
