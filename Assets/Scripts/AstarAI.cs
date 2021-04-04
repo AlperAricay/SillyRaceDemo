@@ -6,6 +6,7 @@ public class AstarAI : MonoBehaviour {
 
     private Seeker seeker;
     private CharacterController controller;
+    private OpponentController _botController;
 
     public Path path;
 
@@ -22,9 +23,8 @@ public class AstarAI : MonoBehaviour {
 
     public void Start () {
         seeker = GetComponent<Seeker>();
-        // If you are writing a 2D game you can remove this line
-        // and use the alternative way to move sugggested further below.
-        controller = GetComponent<CharacterController>();
+        //controller = GetComponent<CharacterController>();
+        _botController = GetComponent<OpponentController>();
     }
 
     public void OnPathComplete (Path p) {
@@ -37,7 +37,7 @@ public class AstarAI : MonoBehaviour {
         // take a path from the pool if possible. See also the documentation page about path pooling.
         p.Claim(this);
         if (!p.error) {
-            if (path != null) path.Release(this);
+            path?.Release(this);
             path = p;
             // Reset the waypoint counter so that we start to move towards the first point in the path
             currentWaypoint = 0;
@@ -93,11 +93,12 @@ public class AstarAI : MonoBehaviour {
         // Normalize it so that it has a length of 1 world unit
         Vector3 dir = (path.vectorPath[currentWaypoint] - transform.position).normalized;
         // Multiply the direction by our desired speed to get a velocity
-        Vector3 velocity = dir * speed * speedFactor;
+        Vector3 velocity = dir * (speed * speedFactor);
 
         // Move the agent using the CharacterController component
         // Note that SimpleMove takes a velocity in meters/second, so we should not multiply by Time.deltaTime
-        controller.SimpleMove(velocity);
+        //controller.SimpleMove(velocity);
+        _botController.calculatedVelocity = velocity;
 
         // If you are writing a 2D game you may want to remove the CharacterController and instead modify the position directly
         // transform.position += velocity * Time.deltaTime;

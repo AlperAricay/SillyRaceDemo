@@ -13,6 +13,8 @@ public class OpponentController : MonoBehaviour, IRunner
     public Transform RunnerTransform { get; private set; }
     public bool HasFinished { get; set; }
 
+    public Vector3 calculatedVelocity;
+
     [SerializeField] private float speed = 10f, groundCheckDistance = 0.4f, ragdollToStandTime = 2f;
     
     private float _ragdollTime;
@@ -39,6 +41,7 @@ public class OpponentController : MonoBehaviour, IRunner
         _capsuleCollider = GetComponent<CapsuleCollider>();
         _anim = GetComponent<Animator>();
         CurrentCheckpointIndex = 0;
+        calculatedVelocity = Vector3.zero;
         
         var rigidBodies=GetComponentsInChildren(typeof(Rigidbody));
         for (var i = 1; i < rigidBodies.Length; i++)
@@ -76,7 +79,12 @@ public class OpponentController : MonoBehaviour, IRunner
                 break;
             case PlayerController.GameplayPhases.RacingPhase:
                 _isGrounded = IsGrounded();
-                if (!_isRagdoll) _anim.SetBool(Grounded, _isGrounded);
+                if (!_isRagdoll)
+                {
+                    Rotate();
+                    _anim.SetBool(Grounded, _isGrounded);
+                }
+
                 break;
             case PlayerController.GameplayPhases.PaintingPhase:
                 break;
@@ -84,7 +92,12 @@ public class OpponentController : MonoBehaviour, IRunner
                 throw new ArgumentOutOfRangeException();
         }
     }
-    
+
+    private void FixedUpdate()
+    {
+        Move();
+    }
+
     private bool IsGrounded()
     {
         var lowerSphere = transform.position + transform.up * (_capsuleCollider.radius + Physics.defaultContactOffset);
@@ -244,10 +257,26 @@ public class OpponentController : MonoBehaviour, IRunner
 
     #endregion
 
-    public void Move(Vector3 calculatedVelocity)
+    private void Move()
     {
         if (!_inControl || _isRagdoll || IsStanding || !_isGrounded) return;
-        _rb.AddForce(calculatedVelocity, ForceMode.VelocityChange);
+        
+        var velocity = _rb.velocity;
+        var requiredVelocity = calculatedVelocity - velocity;
+        //requiredVelocity.y = 0;
+        
+        _rb.AddForce(requiredVelocity, ForceMode.VelocityChange);
         _anim.SetBool(IsRunning, true);
+    }
+    
+    private void Rotate()
+    {
+        var lookDirection = new Vector3(calculatedVelocity.x, 0, calculatedVelocity.z);
+        var lookRotation = Quaternion.LookRotation(lookDirection, Vector3.up);
+        
+        var step = 90 * Time.deltaTime;
+        lookRotation = Quaternion.RotateTowards(transform.rotation, lookRotation, step);
+        transform.rotation = lookRotation;
+        
     }
 }
