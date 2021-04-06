@@ -280,6 +280,36 @@ public class OpponentController : MonoBehaviour, IRunner
             {
                 Debug.Log("Gonna collide with a runner");
                 //for loop with many angles, break if found a dir without collision
+                var currX = -2;
+                for (int i = 0; i < 5; i++)
+                {
+                    var possiblePosition = transform.position;
+                    possiblePosition.z += 1.5f;
+                    possiblePosition.x += currX;
+                    var possibleDir = (possiblePosition - transform.position).normalized;
+                    if (!Physics.BoxCast(new Vector3(transform.position.x, transform.position.y + 0.5f, transform.position.z),
+                        Vector3.one * .75f, possibleDir, Quaternion.identity, 1.5f, LayerMask.GetMask("Bot", "Player")))
+                    {
+                        Debug.Log("CurrX: " + currX);
+                        //check if this cast is out of bounds
+                        if (Physics.CheckBox(possiblePosition, Vector3.one, Quaternion.identity, LayerMask.GetMask("Platform")))
+                        {
+                            //use this cast's direction
+                            dir = possibleDir;
+                            Debug.Log("Used an alternative position. Which is: " + possiblePosition);
+                            break;
+                        }
+                        // if (Physics.BoxCast(new Vector3(transform.position.x, transform.position.y + 0.5f, transform.position.z),
+                        //     Vector3.one * .75f, possibleDir, out var hit, Quaternion.identity, 1.5f, LayerMask.GetMask("Platform")))
+                        // {
+                        //     //use this cast's direction
+                        //     dir = possibleDir;
+                        //     Debug.Log("Used an alternative position. Which is: " + hit.point);
+                        //     break;
+                        // }
+                    }
+                    currX++;
+                }
             }
             var velocity = _rb.velocity;
             calculatedVelocity = dir * speed;
@@ -313,8 +343,8 @@ public class OpponentController : MonoBehaviour, IRunner
         
         var lookRotation = Quaternion.LookRotation(lookDirection, Vector3.up);
         
-        //var step = 90 * Time.deltaTime;
-        //lookRotation = Quaternion.RotateTowards(transform.rotation, lookRotation, step);
+        var step = 180 * Time.deltaTime;
+        lookRotation = Quaternion.RotateTowards(transform.rotation, lookRotation, step);
         transform.rotation = lookRotation;
     }
 }
