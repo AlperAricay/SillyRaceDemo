@@ -33,16 +33,17 @@
       <option value="$PROJECT_DIR$/Assets/Scripts/Interfaces/IImpulser.cs" />
       <option value="$PROJECT_DIR$/Assets/Scripts/Interfaces/IImpulse.cs" />
       <option value="$PROJECT_DIR$/Assets/Scripts/TosserCollider.cs" />
-      <option value="$PROJECT_DIR$/Assets/Scripts/KillerCollider.cs" />
       <option value="$PROJECT_DIR$/Assets/Scripts/Interfaces/IRunner.cs" />
       <option value="$PROJECT_DIR$/Assets/StandBehaviour.cs" />
       <option value="$PROJECT_DIR$/Assets/Scripts/P3dChangeCounterText.cs" />
       <option value="$PROJECT_DIR$/Assets/Scripts/FinishLine.cs" />
       <option value="$PROJECT_DIR$/Assets/Scripts/EnvironmentUpdater.cs" />
-      <option value="$PROJECT_DIR$/Assets/Scripts/GameManager.cs" />
       <option value="$PROJECT_DIR$/Assets/Scripts/PlayerController.cs" />
       <option value="$PROJECT_DIR$/Assets/Behaviors/AIDestinationSetter.cs" />
       <option value="$PROJECT_DIR$/Assets/Scripts/AstarAI.cs" />
+      <option value="$PROJECT_DIR$/Assets/Scripts/AstarPathUpdater.cs" />
+      <option value="$PROJECT_DIR$/Assets/Scripts/GameManager.cs" />
+      <option value="$PROJECT_DIR$/Assets/Scripts/KillerCollider.cs" />
       <option value="$PROJECT_DIR$/Assets/Scripts/OpponentController.cs" />
     </changedPaths>
   </component>
@@ -92,7 +93,9 @@
       <workItem from="1617202086827" duration="8960000" />
       <workItem from="1617462246795" duration="634000" />
       <workItem from="1617532056108" duration="612000" />
-      <workItem from="1617534586592" duration="9644000" />
+      <workItem from="1617534586592" duration="10253000" />
+      <workItem from="1617704405920" duration="7077000" />
+      <workItem from="1617716831656" duration="7555000" />
     </task>
     <servers />
   </component>

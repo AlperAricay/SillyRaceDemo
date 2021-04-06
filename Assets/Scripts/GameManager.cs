@@ -6,6 +6,7 @@ using Cinemachine;
 using Interfaces;
 using PaintIn3D;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 public class GameManager : MonoBehaviour
@@ -15,7 +16,8 @@ public class GameManager : MonoBehaviour
     public List<IRunner> CurrentRunners = new List<IRunner>();
     public CinemachineVirtualCamera thirdPersonCamera;
     public Transform paintingTransform, paintingSphere;
-
+    public List<Checkpoint> checkpoints = new List<Checkpoint>();
+    
     [SerializeField] private Transform finishLine, rankingsParent, checkpointsParent;
     [SerializeField] private GameObject winPanel, losePanel, rankingPanel, paintingPanel;
     [SerializeField] private Text playerRankText;
@@ -24,7 +26,7 @@ public class GameManager : MonoBehaviour
     private IRunner _player;
     private readonly List<IRunner> _finishedRunners = new List<IRunner>();
     private List<Text> _rankingUsernameTexts = new List<Text>();
-    private List<Checkpoint> _checkpoints = new List<Checkpoint>();
+    
     private int _spawnPointIndex;
     private PlayerController _playerControllerInstance;
     private P3dChangeCounter _p3dChangeCounter;
@@ -34,10 +36,10 @@ public class GameManager : MonoBehaviour
         Instance = this;
         CurrentRunners.Clear();
         _finishedRunners.Clear();
-        _checkpoints.Clear();
+        checkpoints.Clear();
         foreach (Transform child in rankingsParent) _rankingUsernameTexts.Add(child.GetChild(1).GetComponent<Text>());
         for (int i = 0; i < checkpointsParent.childCount; i++)
-            _checkpoints.Add(checkpointsParent.GetChild(i).GetComponent<Checkpoint>());
+            checkpoints.Add(checkpointsParent.GetChild(i).GetComponent<Checkpoint>());
         _spawnPointIndex = 0;
         _p3dChangeCounter = paintingSphere.parent.GetComponent<P3dChangeCounter>();
     }
@@ -71,9 +73,9 @@ public class GameManager : MonoBehaviour
 
     public Vector3 GetSpawnPoint(IRunner runner)
     {
-        var pos = _checkpoints[runner.CurrentCheckpointIndex].spawnPoints[_spawnPointIndex].position;
+        var pos = checkpoints[runner.CurrentCheckpointIndex].spawnPoints[_spawnPointIndex].position;
         
-        if (_spawnPointIndex == _checkpoints[runner.CurrentCheckpointIndex].spawnPoints.Count - 1)
+        if (_spawnPointIndex == checkpoints[runner.CurrentCheckpointIndex].spawnPoints.Count - 1)
         {
             _spawnPointIndex = 0;
         }

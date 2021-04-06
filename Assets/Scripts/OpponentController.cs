@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Interfaces;
 using UnityEngine;
+using UnityEngine.AI;
 using Random = UnityEngine.Random;
 
 public class OpponentController : MonoBehaviour, IRunner
@@ -16,7 +17,7 @@ public class OpponentController : MonoBehaviour, IRunner
     public Vector3 calculatedVelocity;
 
     [SerializeField] private float speed = 10f, groundCheckDistance = 0.4f, ragdollToStandTime = 2f;
-    
+
     private float _ragdollTime;
     private bool _inControl, _isRagdoll, _isGrounded;
     private Rigidbody _rb;
@@ -25,7 +26,8 @@ public class OpponentController : MonoBehaviour, IRunner
     private List<Rigidbody> _rigidbodiesList = new List<Rigidbody>();
     private List<Collider> _rigidbodyCollidersList = new List<Collider>();
     private PlayerController _playerControllerInstance;
-    
+    private NavMeshPath _path;
+
     private static readonly int IsRunning = Animator.StringToHash("IsRunning");
     private static readonly int Grounded = Animator.StringToHash("IsGrounded");
     private static readonly int Stand = Animator.StringToHash("Stand");
@@ -42,6 +44,7 @@ public class OpponentController : MonoBehaviour, IRunner
         _anim = GetComponent<Animator>();
         CurrentCheckpointIndex = 0;
         calculatedVelocity = Vector3.zero;
+        _path = new NavMeshPath();
         
         var rigidBodies=GetComponentsInChildren(typeof(Rigidbody));
         for (var i = 1; i < rigidBodies.Length; i++)
@@ -206,6 +209,7 @@ public class OpponentController : MonoBehaviour, IRunner
                 coll.enabled = false;
             }
             transform.position = GameManager.Instance.GetSpawnPoint(this);
+            transform.rotation = Quaternion.identity;
         }
     
         public void Finish()
@@ -260,23 +264,57 @@ public class OpponentController : MonoBehaviour, IRunner
     private void Move()
     {
         if (!_inControl || _isRagdoll || IsStanding || !_isGrounded) return;
+        NavMesh.CalculatePath(transform.position,
+            GameManager.Instance.checkpoints[CurrentCheckpointIndex + 1].transform.position, NavMesh.AllAreas, _path);//CHANGE THIS!
+
+        for (int i = 0; i < _path.corners.Length - 1; i++)
+            Debug.DrawLine(_path.corners[i], _path.corners[i + 1], Color.red);
+
+        if (_path.corners.Length > 1)
+        {
+            var dir = (_path.corners[1] - transform.position).normalized;
+            dir.y = 0;
+            //MANIPULATE DIR IF THEY ARE ABOUT TO COLLIDE
+            if (Physics.BoxCast(new Vector3(transform.position.x, transform.position.y + 0.5f, transform.position.z),
+                Vector3.one * .75f, dir, Quaternion.identity, 1.5f, LayerMask.GetMask("Bot", "Player")))
+            {
+                Debug.Log("Gonna collide with a runner");
+                //for loop with many angles, break if found a dir without collision
+            }
+            var velocity = _rb.velocity;
+            calculatedVelocity = dir * speed;
+            var requiredVelocity = calculatedVelocity - velocity;
+            _rb.AddForce(requiredVelocity, ForceMode.VelocityChange);
+            _anim.SetBool(IsRunning, true);
+        }
+        else
+        {
+            _anim.SetBool(IsRunning, false);
+        }
         
-        var velocity = _rb.velocity;
-        var requiredVelocity = calculatedVelocity - velocity;
-        //requiredVelocity.y = 0;
-        
-        _rb.AddForce(requiredVelocity, ForceMode.VelocityChange);
-        _anim.SetBool(IsRunning, true);
+        // //Test the pathfinding solution and modify if needed
+        //
+        //
+        // //5 boxes with 0.75 half extents, distance of 1.5f, center is 0.5f higher than transform, WORLD* X differences of centers are (relative to transform) -4, -2, 0, 2, 4
+        //
+        // var velocity = _rb.velocity;
+        // var requiredVelocity = calculatedVelocity - velocity;
+        // //requiredVelocity.y = 0;
+        //
+        // _rb.AddForce(requiredVelocity, ForceMode.VelocityChange);
+        // _anim.SetBool(IsRunning, true);
     }
     
     private void Rotate()
     {
-        var lookDirection = new Vector3(calculatedVelocity.x, 0, calculatedVelocity.z);
+        if (_path.corners.Length <= 1) return;
+        var lookDirection = calculatedVelocity;
+        lookDirection.y = transform.position.y;
+        
         var lookRotation = Quaternion.LookRotation(lookDirection, Vector3.up);
         
-        var step = 90 * Time.deltaTime;
-        lookRotation = Quaternion.RotateTowards(transform.rotation, lookRotation, step);
+        //var step = 90 * Time.deltaTime;
+        //lookRotation = Quaternion.RotateTowards(transform.rotation, lookRotation, step);
         transform.rotation = lookRotation;
-        
     }
 }
