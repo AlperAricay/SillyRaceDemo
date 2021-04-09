@@ -38,12 +38,12 @@
       <option value="$PROJECT_DIR$/Assets/Scripts/P3dChangeCounterText.cs" />
       <option value="$PROJECT_DIR$/Assets/Scripts/FinishLine.cs" />
       <option value="$PROJECT_DIR$/Assets/Scripts/EnvironmentUpdater.cs" />
-      <option value="$PROJECT_DIR$/Assets/Scripts/PlayerController.cs" />
       <option value="$PROJECT_DIR$/Assets/Behaviors/AIDestinationSetter.cs" />
       <option value="$PROJECT_DIR$/Assets/Scripts/AstarAI.cs" />
       <option value="$PROJECT_DIR$/Assets/Scripts/AstarPathUpdater.cs" />
-      <option value="$PROJECT_DIR$/Assets/Scripts/GameManager.cs" />
       <option value="$PROJECT_DIR$/Assets/Scripts/KillerCollider.cs" />
+      <option value="$PROJECT_DIR$/Assets/Scripts/GameManager.cs" />
+      <option value="$PROJECT_DIR$/Assets/Scripts/PlayerController.cs" />
       <option value="$PROJECT_DIR$/Assets/Scripts/OpponentController.cs" />
     </changedPaths>
   </component>
@@ -95,7 +95,9 @@
       <workItem from="1617532056108" duration="612000" />
       <workItem from="1617534586592" duration="10253000" />
       <workItem from="1617704405920" duration="7077000" />
-      <workItem from="1617716831656" duration="10287000" />
+      <workItem from="1617716831656" duration="10860000" />
+      <workItem from="1617969065415" duration="628000" />
+      <workItem from="1617975138921" duration="3216000" />
     </task>
     <servers />
   </component>

@@ -47,6 +47,7 @@ public class PlayerController : MonoBehaviour, IRunner
     private static readonly int Stand = Animator.StringToHash("Stand");
     private Transform _paintingSphere;
     private static readonly int Paint = Animator.StringToHash("Paint");
+    private int _runnerID;
 
     public enum GameplayPhases
     {
@@ -79,6 +80,7 @@ public class PlayerController : MonoBehaviour, IRunner
 
     private void Start()
     {
+        _runnerID = GameManager.Instance.GetRunnerID();
         GameManager.Instance.CurrentRunners.Add(this);
         HasFinished = false;
         _joystick = FloatingJoystick.Instance;
@@ -92,7 +94,8 @@ public class PlayerController : MonoBehaviour, IRunner
         {
             coll.enabled = false;
         }
-        transform.position = GameManager.Instance.GetSpawnPoint(this);
+        //transform.position = GameManager.Instance.GetSpawnPoint(this);
+        transform.position = GameManager.Instance.GetSpawnPoint(this, _runnerID);
         _paintingSphere = GameManager.Instance.paintingSphere;
     }
 

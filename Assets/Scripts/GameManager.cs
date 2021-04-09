@@ -26,7 +26,8 @@ public class GameManager : MonoBehaviour
     private IRunner _player;
     private readonly List<IRunner> _finishedRunners = new List<IRunner>();
     private List<Text> _rankingUsernameTexts = new List<Text>();
-    
+
+    private int _currentID;
     private int _spawnPointIndex;
     private PlayerController _playerControllerInstance;
     private P3dChangeCounter _p3dChangeCounter;
@@ -34,6 +35,7 @@ public class GameManager : MonoBehaviour
     private void Awake()
     {
         Instance = this;
+        _currentID = 0;
         CurrentRunners.Clear();
         _finishedRunners.Clear();
         checkpoints.Clear();
@@ -71,6 +73,13 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    public int GetRunnerID()
+    {
+        var returningID = _currentID;
+        _currentID++;
+        return returningID;
+    }
+    
     public Vector3 GetSpawnPoint(IRunner runner)
     {
         var pos = checkpoints[runner.CurrentCheckpointIndex].spawnPoints[_spawnPointIndex].position;
@@ -83,6 +92,12 @@ public class GameManager : MonoBehaviour
         {
             _spawnPointIndex++;
         }
+        return pos;
+    }
+    
+    public Vector3 GetSpawnPoint(IRunner runner, int runnerID)
+    {
+        var pos = checkpoints[runner.CurrentCheckpointIndex].spawnPoints[runnerID].position;
         return pos;
     }
 
