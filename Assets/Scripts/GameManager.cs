@@ -14,7 +14,7 @@ public class GameManager : MonoBehaviour
     public static GameManager Instance;
 
     public List<IRunner> CurrentRunners = new List<IRunner>();
-    public CinemachineVirtualCamera thirdPersonCamera;
+    public CinemachineVirtualCamera thirdPersonCamera, thirdPersonCameraUpwards;
     public Transform paintingTransform, paintingSphere;
     public List<Checkpoint> checkpoints = new List<Checkpoint>();
     

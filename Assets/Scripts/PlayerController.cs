@@ -205,6 +205,7 @@ public class PlayerController : MonoBehaviour, IRunner
                 currentPhase = newPhase;
                 _anim.SetBool(IsRunning, true);
                 GameManager.Instance.thirdPersonCamera.m_Priority = 1;
+                GameManager.Instance.thirdPersonCameraUpwards.m_Priority = 1;
 
                 var paintingPosition = GameManager.Instance.paintingTransform.position;
                 var toPaintingPosition = paintingPosition - transform.position;

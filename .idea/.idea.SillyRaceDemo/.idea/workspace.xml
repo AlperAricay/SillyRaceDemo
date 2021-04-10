@@ -12,8 +12,8 @@
     <setting file="file://$PROJECT_DIR$/Assets/Scripts/Checkpoint.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/Scripts/OpponentController.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/C7E96583-A03D-4DDF-A10C-236D61B93EDA/49/662dbd06/CharacterController.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/Assets/Scripts/AstarAI.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/Scripts/HorizontalObstacleNavMeshHelper.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Assets/Scripts/CameraSwitcher.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/Scripts/Interfaces/IImpulse.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/Scripts/KillerCollider.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/Scripts/P3dChangeCounterText.cs" root0="FORCE_HIGHLIGHTING" />
@@ -45,9 +45,10 @@
       <option value="$PROJECT_DIR$/Assets/Scripts/KillerCollider.cs" />
       <option value="$PROJECT_DIR$/Assets/Scripts/PredictionColliderHandler.cs" />
       <option value="$PROJECT_DIR$/Assets/Scripts/HorizontalObstacleNavMeshHelper.cs" />
-      <option value="$PROJECT_DIR$/Assets/Scripts/GameManager.cs" />
-      <option value="$PROJECT_DIR$/Assets/Scripts/PlayerController.cs" />
       <option value="$PROJECT_DIR$/Assets/Scripts/OpponentController.cs" />
+      <option value="$PROJECT_DIR$/Assets/Scripts/PlayerController.cs" />
+      <option value="$PROJECT_DIR$/Assets/Scripts/GameManager.cs" />
+      <option value="$PROJECT_DIR$/Assets/Scripts/CameraSwitcher.cs" />
     </changedPaths>
   </component>
   <component name="ProjectId" id="1qNviXLu7KWyPjDRu3dN6xfiYHc" />
@@ -101,7 +102,7 @@
       <workItem from="1617716831656" duration="10860000" />
       <workItem from="1617969065415" duration="628000" />
       <workItem from="1617975138921" duration="3216000" />
-      <workItem from="1618045287446" duration="8161000" />
+      <workItem from="1618045287446" duration="9810000" />
     </task>
     <servers />
   </component>
