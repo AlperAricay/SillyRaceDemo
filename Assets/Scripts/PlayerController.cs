@@ -138,7 +138,7 @@ public class PlayerController : MonoBehaviour, IRunner
             case GameplayPhases.RacingPhase:
                 if (_inControl && !_isRagdoll && !IsStanding && _isGrounded)
                 {
-                    Move();   
+                    Move();
                 }
                 break;
             case GameplayPhases.PaintingPhase:
@@ -229,42 +229,42 @@ public class PlayerController : MonoBehaviour, IRunner
     #region Collision / Trigger Methods
 
     private void OnCollisionEnter(Collision other)
+    {
+        var isInteractable = other.gameObject.TryGetComponent<IInteractable>(out var obj);
+        var isImpulsingObstacle = other.gameObject.TryGetComponent<IImpulse>(out var impulsingObj);
+        if (isInteractable)
         {
-            var isInteractable = other.gameObject.TryGetComponent<IInteractable>(out var obj);
-            var isImpulsingObstacle = other.gameObject.TryGetComponent<IImpulse>(out var impulsingObj);
-            if (isInteractable)
-            {
-                obj.Interact(this, CollisionType.Enter);
-            }
-            else if (isImpulsingObstacle)
-            {
-                impulsingObj.Impulse(this, other);
-            }
+            obj.Interact(this, CollisionType.Enter);
         }
-        private void OnCollisionStay(Collision other)
+        else if (isImpulsingObstacle)
         {
-            var isInteractable = other.gameObject.TryGetComponent<IInteractable>(out var obj);
-            if (isInteractable)
-            {
-                obj.Interact(this, CollisionType.Stay);
-            }
+            impulsingObj.Impulse(this, other);
         }
-        private void OnCollisionExit(Collision other)
+    }
+    private void OnCollisionStay(Collision other)
+    {
+        var isInteractable = other.gameObject.TryGetComponent<IInteractable>(out var obj);
+        if (isInteractable)
         {
-            var isInteractable = other.gameObject.TryGetComponent<IInteractable>(out var obj);
-            if (isInteractable)
-            {
-                obj.Interact(this, CollisionType.Exit);
-            }
+            obj.Interact(this, CollisionType.Stay);
         }
-        private void OnTriggerEnter(Collider other)
+    }
+    private void OnCollisionExit(Collision other)
+    {
+        var isInteractable = other.gameObject.TryGetComponent<IInteractable>(out var obj);
+        if (isInteractable)
         {
-            var isInteractable = other.gameObject.TryGetComponent<IInteractable>(out var obj);
-            if (isInteractable)
-            {
-                obj.Interact(this, CollisionType.Enter);
-            }
+            obj.Interact(this, CollisionType.Exit);
         }
+    }
+    private void OnTriggerEnter(Collider other)
+    {
+        var isInteractable = other.gameObject.TryGetComponent<IInteractable>(out var obj);
+        if (isInteractable)
+        {
+            obj.Interact(this, CollisionType.Enter);
+        }
+    }
 
     #endregion
     

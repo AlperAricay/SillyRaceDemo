@@ -18,7 +18,7 @@ public class OpponentController : MonoBehaviour, IRunner
 
     [SerializeField] private float speed = 10f, groundCheckDistance = 0.4f, ragdollToStandTime = 2f;
 
-    private float _ragdollTime;
+    private float _ragdollTime, _jumpTime;
     private bool _inControl, _isRagdoll, _isGrounded;
     private Rigidbody _rb;
     private CapsuleCollider _capsuleCollider;
@@ -45,6 +45,7 @@ public class OpponentController : MonoBehaviour, IRunner
         CurrentCheckpointIndex = 0;
         calculatedVelocity = Vector3.zero;
         _path = new NavMeshPath();
+        _jumpTime = -10;
         
         var rigidBodies=GetComponentsInChildren(typeof(Rigidbody));
         for (var i = 1; i < rigidBodies.Length; i++)
@@ -101,7 +102,10 @@ public class OpponentController : MonoBehaviour, IRunner
 
     private void FixedUpdate()
     {
-        Move();
+        if (_inControl && !_isRagdoll && !IsStanding && _isGrounded && !HasFinished && Time.time - _jumpTime >= 0.5f)
+            Move();
+        else
+            _anim.SetBool(IsRunning, false);
     }
 
     private bool IsGrounded()
@@ -189,8 +193,10 @@ public class OpponentController : MonoBehaviour, IRunner
     
         public void Jump(float jumpPower)
         {
+            _jumpTime = Time.time;
             var jumpForce = (transform.forward + Vector3.up * 1.5f).normalized * jumpPower;
             _rb.AddForce(jumpForce, ForceMode.VelocityChange);
+            Debug.Log("Opponent jump");
         }
     
         public void Respawn()
@@ -266,7 +272,87 @@ public class OpponentController : MonoBehaviour, IRunner
 
     private void Move()
     {
-        if (!_inControl || _isRagdoll || IsStanding || !_isGrounded || HasFinished) return;
+        //if (!_inControl || _isRagdoll || IsStanding || !_isGrounded || HasFinished) return;
+        var targetPos = GameManager.Instance.checkpoints.Count <= CurrentCheckpointIndex + 1
+            ? GameManager.Instance.checkpoints[CurrentCheckpointIndex].spawnPoints[_runnerID].transform.position
+            : GameManager.Instance.checkpoints[CurrentCheckpointIndex + 1].spawnPoints[_runnerID].transform.position;
+
+        if (NavMesh.CalculatePath(transform.position, targetPos, NavMesh.AllAreas, _path))
+        {
+            for (int i = 0; i < _path.corners.Length - 1; i++)
+                Debug.DrawLine(_path.corners[i], _path.corners[i + 1], Color.red);
+
+            if (_path.corners.Length > 1)
+            {
+                var dir = (_path.corners[1] - transform.position).normalized;
+                //dir.y = 0;
+                //MANIPULATE DIR IF THEY ARE ABOUT TO COLLIDE
+                if (Physics.BoxCast(
+                    new Vector3(transform.position.x, transform.position.y + 0.5f, transform.position.z),
+                    Vector3.one * .75f, dir, Quaternion.identity, 1.5f, LayerMask.GetMask("Bot", "Player")))
+                {
+                    //for loop with many angles, break if found a dir without collision
+                    var currX = -2;
+                    for (int i = 0; i < 5; i++)
+                    {
+                        var possiblePosition = transform.position;
+                        possiblePosition.z += 1.5f;
+                        possiblePosition.x += currX;
+                        var possibleDir = (possiblePosition - transform.position).normalized;
+                        if (!Physics.BoxCast(
+                            new Vector3(transform.position.x, transform.position.y + 0.5f, transform.position.z),
+                            Vector3.one * .75f, possibleDir, Quaternion.identity, 1.5f,
+                            LayerMask.GetMask("Bot", "Player", "Obstacle", "Walls"), QueryTriggerInteraction.Collide))
+                        {
+                            //check if this cast is out of bounds
+                            if (Physics.CheckBox(possiblePosition, Vector3.one, Quaternion.identity,
+                                LayerMask.GetMask("Platform")))
+                            {
+                                //use this cast's direction
+                                dir = possibleDir;
+                                break;
+                            }
+                        }
+
+                        currX++;
+                    }
+                }
+
+                var velocity = _rb.velocity;
+                calculatedVelocity = dir * speed;
+                var requiredVelocity = calculatedVelocity - velocity;
+                requiredVelocity.y = 0;
+                _rb.AddForce(requiredVelocity, ForceMode.VelocityChange);
+                _anim.SetBool(IsRunning, true);
+            }
+            else
+            {
+                //Stop XZ movement manually
+                var velocity = _rb.velocity;
+                velocity.x = 0;
+                velocity.z = 0;
+                _rb.velocity = velocity;
+
+                _anim.SetBool(IsRunning, false);
+            }
+        }
+
+        else
+        {
+            //Stop XZ movement manually
+            var velocity = _rb.velocity;
+            velocity.x = 0;
+            velocity.z = 0;
+            _rb.velocity = velocity;
+
+            _anim.SetBool(IsRunning, false);
+        }
+        
+    }
+    
+    /*private void Move()
+    {
+        //if (!_inControl || _isRagdoll || IsStanding || !_isGrounded || HasFinished) return;
         var targetPos = GameManager.Instance.checkpoints.Count <= CurrentCheckpointIndex + 1
             ? GameManager.Instance.checkpoints[CurrentCheckpointIndex].spawnPoints[_runnerID].transform.position
             : GameManager.Instance.checkpoints[CurrentCheckpointIndex + 1].spawnPoints[_runnerID].transform.position;
@@ -279,12 +365,11 @@ public class OpponentController : MonoBehaviour, IRunner
         if (_path.corners.Length > 1)
         {
             var dir = (_path.corners[1] - transform.position).normalized;
-            dir.y = 0;
+            //dir.y = 0;
             //MANIPULATE DIR IF THEY ARE ABOUT TO COLLIDE
             if (Physics.BoxCast(new Vector3(transform.position.x, transform.position.y + 0.5f, transform.position.z),
                 Vector3.one * .75f, dir, Quaternion.identity, 1.5f, LayerMask.GetMask("Bot", "Player")))
             {
-                Debug.Log("Gonna collide with a runner");
                 //for loop with many angles, break if found a dir without collision
                 var currX = -2;
                 for (int i = 0; i < 5; i++)
@@ -294,25 +379,16 @@ public class OpponentController : MonoBehaviour, IRunner
                     possiblePosition.x += currX;
                     var possibleDir = (possiblePosition - transform.position).normalized;
                     if (!Physics.BoxCast(new Vector3(transform.position.x, transform.position.y + 0.5f, transform.position.z),
-                        Vector3.one * .75f, possibleDir, Quaternion.identity, 1.5f, LayerMask.GetMask("Bot", "Player", "Obstacle")))
+                        Vector3.one * .75f, possibleDir, Quaternion.identity, 1.5f,
+                        LayerMask.GetMask("Bot", "Player", "Obstacle", "Walls"), QueryTriggerInteraction.Collide))
                     {
-                        Debug.Log("CurrX: " + currX);
                         //check if this cast is out of bounds
                         if (Physics.CheckBox(possiblePosition, Vector3.one, Quaternion.identity, LayerMask.GetMask("Platform")))
                         {
                             //use this cast's direction
                             dir = possibleDir;
-                            Debug.Log("Used an alternative position. Which is: " + possiblePosition);
                             break;
                         }
-                        // if (Physics.BoxCast(new Vector3(transform.position.x, transform.position.y + 0.5f, transform.position.z),
-                        //     Vector3.one * .75f, possibleDir, out var hit, Quaternion.identity, 1.5f, LayerMask.GetMask("Platform")))
-                        // {
-                        //     //use this cast's direction
-                        //     dir = possibleDir;
-                        //     Debug.Log("Used an alternative position. Which is: " + hit.point);
-                        //     break;
-                        // }
                     }
                     currX++;
                 }
@@ -320,32 +396,27 @@ public class OpponentController : MonoBehaviour, IRunner
             var velocity = _rb.velocity;
             calculatedVelocity = dir * speed;
             var requiredVelocity = calculatedVelocity - velocity;
+            requiredVelocity.y = 0;
             _rb.AddForce(requiredVelocity, ForceMode.VelocityChange);
             _anim.SetBool(IsRunning, true);
         }
         else
         {
+            //Stop XZ movement manually
+            var velocity = _rb.velocity;
+            velocity.x = 0;
+            velocity.z = 0;
+            _rb.velocity = velocity;
+
             _anim.SetBool(IsRunning, false);
         }
-        
-        // //Test the pathfinding solution and modify if needed
-        //
-        //
-        // //5 boxes with 0.75 half extents, distance of 1.5f, center is 0.5f higher than transform, WORLD* X differences of centers are (relative to transform) -4, -2, 0, 2, 4
-        //
-        // var velocity = _rb.velocity;
-        // var requiredVelocity = calculatedVelocity - velocity;
-        // //requiredVelocity.y = 0;
-        //
-        // _rb.AddForce(requiredVelocity, ForceMode.VelocityChange);
-        // _anim.SetBool(IsRunning, true);
-    }
+    }*/
     
     private void Rotate()
     {
-        if (_path.corners.Length <= 1) return;
-        var lookDirection = calculatedVelocity;
-        lookDirection.y = transform.position.y;
+        if (_path.corners.Length <= 1 || Time.time - _jumpTime < 0.5f || !_isGrounded) return;
+        var lookDirection = (_path.corners[1] - transform.position).normalized;
+        //lookDirection.y = transform.position.y;
         
         var lookRotation = Quaternion.LookRotation(lookDirection, Vector3.up);
         

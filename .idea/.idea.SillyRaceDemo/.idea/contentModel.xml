@@ -391,6 +391,7 @@
           <e p="Checkpoint.cs" t="Include" />
           <e p="FinishLine.cs" t="Include" />
           <e p="GameManager.cs" t="Include" />
+          <e p="HorizontalObstacleNavMeshHelper.cs" t="Include" />
           <e p="Interfaces" t="Include">
             <e p="IImpulse.cs" t="Include" />
             <e p="IInteractable.cs" t="Include" />

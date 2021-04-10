@@ -59,7 +59,16 @@ public class GameManager : MonoBehaviour
             case PlayerController.GameplayPhases.StartingPhase:
                 break;
             case PlayerController.GameplayPhases.RacingPhase:
-                CurrentRunners = CurrentRunners.OrderBy(runner => Vector3.Distance(runner.RunnerTransform.position, finishLine.position)).ToList();
+                CurrentRunners = CurrentRunners.OrderByDescending(runner => runner.CurrentCheckpointIndex)
+                    .ThenBy(runner => Vector3.Distance(runner.RunnerTransform.position,
+                        checkpoints.Count <= runner.CurrentCheckpointIndex + 1
+                            ? checkpoints[runner.CurrentCheckpointIndex].transform.position
+                            : checkpoints[runner.CurrentCheckpointIndex + 1].transform.position))
+                    .ToList();
+                // CurrentRunners = CurrentRunners.OrderByDescending(runner => runner.CurrentCheckpointIndex)
+                //     .ThenBy(runner => Vector3.Distance(runner.RunnerTransform.position,
+                //         finishLine.position))
+                //     .ToList();
                 playerRankText.text = (CurrentRunners.FindIndex(runner => runner == _player) + _finishedRunners.Count + 1).ToString();
                 break;
             case PlayerController.GameplayPhases.PaintingPhase:
