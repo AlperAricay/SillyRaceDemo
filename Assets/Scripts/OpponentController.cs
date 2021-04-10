@@ -46,7 +46,7 @@ public class OpponentController : MonoBehaviour, IRunner
         calculatedVelocity = Vector3.zero;
         _path = new NavMeshPath();
         _jumpTime = -10;
-        
+
         var rigidBodies=GetComponentsInChildren(typeof(Rigidbody));
         for (var i = 1; i < rigidBodies.Length; i++)
         {
@@ -272,7 +272,6 @@ public class OpponentController : MonoBehaviour, IRunner
 
     private void Move()
     {
-        //if (!_inControl || _isRagdoll || IsStanding || !_isGrounded || HasFinished) return;
         var targetPos = GameManager.Instance.checkpoints.Count <= CurrentCheckpointIndex + 1
             ? GameManager.Instance.checkpoints[CurrentCheckpointIndex].spawnPoints[_runnerID].transform.position
             : GameManager.Instance.checkpoints[CurrentCheckpointIndex + 1].spawnPoints[_runnerID].transform.position;
@@ -339,79 +338,16 @@ public class OpponentController : MonoBehaviour, IRunner
 
         else
         {
-            //Stop XZ movement manually
-            var velocity = _rb.velocity;
-            velocity.x = 0;
-            velocity.z = 0;
-            _rb.velocity = velocity;
-
-            _anim.SetBool(IsRunning, false);
-        }
-        
-    }
-    
-    /*private void Move()
-    {
-        //if (!_inControl || _isRagdoll || IsStanding || !_isGrounded || HasFinished) return;
-        var targetPos = GameManager.Instance.checkpoints.Count <= CurrentCheckpointIndex + 1
-            ? GameManager.Instance.checkpoints[CurrentCheckpointIndex].spawnPoints[_runnerID].transform.position
-            : GameManager.Instance.checkpoints[CurrentCheckpointIndex + 1].spawnPoints[_runnerID].transform.position;
-        
-        NavMesh.CalculatePath(transform.position, targetPos, NavMesh.AllAreas, _path);
-
-        for (int i = 0; i < _path.corners.Length - 1; i++)
-            Debug.DrawLine(_path.corners[i], _path.corners[i + 1], Color.red);
-
-        if (_path.corners.Length > 1)
-        {
-            var dir = (_path.corners[1] - transform.position).normalized;
-            //dir.y = 0;
-            //MANIPULATE DIR IF THEY ARE ABOUT TO COLLIDE
-            if (Physics.BoxCast(new Vector3(transform.position.x, transform.position.y + 0.5f, transform.position.z),
-                Vector3.one * .75f, dir, Quaternion.identity, 1.5f, LayerMask.GetMask("Bot", "Player")))
-            {
-                //for loop with many angles, break if found a dir without collision
-                var currX = -2;
-                for (int i = 0; i < 5; i++)
-                {
-                    var possiblePosition = transform.position;
-                    possiblePosition.z += 1.5f;
-                    possiblePosition.x += currX;
-                    var possibleDir = (possiblePosition - transform.position).normalized;
-                    if (!Physics.BoxCast(new Vector3(transform.position.x, transform.position.y + 0.5f, transform.position.z),
-                        Vector3.one * .75f, possibleDir, Quaternion.identity, 1.5f,
-                        LayerMask.GetMask("Bot", "Player", "Obstacle", "Walls"), QueryTriggerInteraction.Collide))
-                    {
-                        //check if this cast is out of bounds
-                        if (Physics.CheckBox(possiblePosition, Vector3.one, Quaternion.identity, LayerMask.GetMask("Platform")))
-                        {
-                            //use this cast's direction
-                            dir = possibleDir;
-                            break;
-                        }
-                    }
-                    currX++;
-                }
-            }
-            var velocity = _rb.velocity;
-            calculatedVelocity = dir * speed;
-            var requiredVelocity = calculatedVelocity - velocity;
-            requiredVelocity.y = 0;
-            _rb.AddForce(requiredVelocity, ForceMode.VelocityChange);
+            var movementVector = transform.forward * speed;
+            var v = _rb.velocity;
+            var requiredV = movementVector - v;
+            
+            _rb.AddForce(requiredV, ForceMode.VelocityChange);
             _anim.SetBool(IsRunning, true);
         }
-        else
-        {
-            //Stop XZ movement manually
-            var velocity = _rb.velocity;
-            velocity.x = 0;
-            velocity.z = 0;
-            _rb.velocity = velocity;
 
-            _anim.SetBool(IsRunning, false);
-        }
-    }*/
-    
+    }
+
     private void Rotate()
     {
         if (_path.corners.Length <= 1 || Time.time - _jumpTime < 0.5f || !_isGrounded) return;
