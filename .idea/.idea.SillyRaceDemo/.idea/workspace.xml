@@ -50,8 +50,8 @@
       <option value="$PROJECT_DIR$/Assets/Shader/SimpleWater.shader" />
       <option value="$PROJECT_DIR$/Assets/Scripts/HalfDonutNavMeshHelper.cs" />
       <option value="$PROJECT_DIR$/Assets/Scripts/OpponentController.cs" />
-      <option value="$PROJECT_DIR$/Assets/Scripts/PlayerController.cs" />
       <option value="$PROJECT_DIR$/Assets/Scripts/GameManager.cs" />
+      <option value="$PROJECT_DIR$/Assets/Scripts/PlayerController.cs" />
     </changedPaths>
   </component>
   <component name="ProjectId" id="1qNviXLu7KWyPjDRu3dN6xfiYHc" />
@@ -106,7 +106,7 @@
       <workItem from="1617969065415" duration="628000" />
       <workItem from="1617975138921" duration="3216000" />
       <workItem from="1618045287446" duration="12922000" />
-      <workItem from="1618127444403" duration="3955000" />
+      <workItem from="1618127444403" duration="4596000" />
     </task>
     <servers />
   </component>
