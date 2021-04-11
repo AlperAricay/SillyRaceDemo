@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using DG.Tweening;
 using Interfaces;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 [RequireComponent (typeof (Rigidbody))]
 [RequireComponent (typeof (CapsuleCollider))]
@@ -65,9 +64,8 @@ public class PlayerController : MonoBehaviour, IRunner
         RunnerTransform = transform;
         Username = "You";
         CurrentCheckpointIndex = 0;
-        //currentPhase = GameplayPhases.StartingPhase;
-        currentPhase = GameplayPhases.RacingPhase;
-        
+        currentPhase = GameplayPhases.StartingPhase;
+
         var rigidBodies=GetComponentsInChildren(typeof(Rigidbody));
         for (var i = 1; i < rigidBodies.Length; i++)
         {
@@ -94,7 +92,6 @@ public class PlayerController : MonoBehaviour, IRunner
         {
             coll.enabled = false;
         }
-        //transform.position = GameManager.Instance.GetSpawnPoint(this);
         transform.position = GameManager.Instance.GetSpawnPoint(this, _runnerID);
         _paintingSphere = GameManager.Instance.paintingSphere;
     }
@@ -120,7 +117,6 @@ public class PlayerController : MonoBehaviour, IRunner
                     var desiredTransform = _paintingSphere.position;
                     desiredTransform.x += _joystick.Horizontal * paintingCursorSpeed * Time.deltaTime;
                     desiredTransform.y += _joystick.Vertical * paintingCursorSpeed* Time.deltaTime;
-                    //clamp values to prevent going out of bounds
                     _paintingSphere.position = desiredTransform;
                 }
                 break;

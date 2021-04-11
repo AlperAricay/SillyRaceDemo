@@ -20,7 +20,7 @@ public class GameManager : MonoBehaviour
     public List<Checkpoint> checkpoints = new List<Checkpoint>();
     
     [SerializeField] private Transform finishLine, rankingsParent, checkpointsParent;
-    [SerializeField] private GameObject winPanel, losePanel, rankingPanel, paintingPanel;
+    [SerializeField] private GameObject winPanel, losePanel, rankingPanel, paintingPanel, startPanel;
     [SerializeField] private Text playerRankText;
     [Range(0,1)][SerializeField] private float requiredPaintingPercentage = 0.95f;
     
@@ -58,6 +58,10 @@ public class GameManager : MonoBehaviour
         switch (_playerControllerInstance.currentPhase)
         {
             case PlayerController.GameplayPhases.StartingPhase:
+                if (Input.GetMouseButtonDown(0))
+                {
+                    StartGame();
+                }
                 break;
             case PlayerController.GameplayPhases.RacingPhase:
                 CurrentRunners = CurrentRunners.OrderByDescending(runner => runner.CurrentCheckpointIndex)
@@ -66,10 +70,6 @@ public class GameManager : MonoBehaviour
                             ? checkpoints[runner.CurrentCheckpointIndex].transform.position
                             : checkpoints[runner.CurrentCheckpointIndex + 1].transform.position))
                     .ToList();
-                // CurrentRunners = CurrentRunners.OrderByDescending(runner => runner.CurrentCheckpointIndex)
-                //     .ThenBy(runner => Vector3.Distance(runner.RunnerTransform.position,
-                //         finishLine.position))
-                //     .ToList();
                 playerRankText.text = (CurrentRunners.FindIndex(runner => runner == _player) + _finishedRunners.Count + 1).ToString();
                 break;
             case PlayerController.GameplayPhases.PaintingPhase:
@@ -145,6 +145,12 @@ public class GameManager : MonoBehaviour
     {
         rankingPanel.SetActive(false);
         paintingPanel.SetActive(true);
+    }
+
+    private void StartGame()
+    {
+        startPanel.SetActive(false);
+        _playerControllerInstance.SwitchPhase(PlayerController.GameplayPhases.RacingPhase);
     }
 
     public void RestartGame() => SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
