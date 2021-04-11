@@ -3,6 +3,13 @@
   <component name="ContentModelStore">
     <e p="C:\UnityProjects\SillyRaceDemo" t="IncludeRecursive">
       <e p="Assets" t="Include">
+        <e p="Customizable Skybox" t="Include">
+          <e p="Stylized Sky" t="Include">
+            <e p="Shaders" t="Include">
+              <e p="Stylized Sky.shader" t="Include" />
+            </e>
+          </e>
+        </e>
         <e p="Demigiant" t="Include">
           <e p="DemiLib" t="Include">
             <e p="Core" t="Include">
@@ -214,6 +221,7 @@
           <e p="Checkpoint.cs" t="Include" />
           <e p="FinishLine.cs" t="Include" />
           <e p="GameManager.cs" t="Include" />
+          <e p="HalfDonutNavMeshHelper.cs" t="Include" />
           <e p="HorizontalObstacleNavMeshHelper.cs" t="Include" />
           <e p="Interfaces" t="Include">
             <e p="IImpulse.cs" t="Include" />
@@ -232,6 +240,48 @@
           <e p="TosserCollider.cs" t="Include" />
         </e>
         <e p="SillyRace.asmdef" t="Include" />
+        <e p="StylizedWater" t="Include">
+          <e p="Changelog.txt" t="Include" />
+          <e p="Effects" t="Include">
+            <e p="Shaders" t="Include">
+              <e p="StylizedWater_Particle_Desktop.shader" t="Include" />
+              <e p="StylizedWater_Particle_Mobile.shader" t="Include" />
+            </e>
+          </e>
+          <e p="Scripts" t="Include">
+            <e p="Editor" t="Include">
+              <e p="StylizedWaterCore.cs" t="Include" />
+              <e p="StylizedWaterInspector.cs" t="Include" />
+              <e p="SWS_NormalMapRenderer.shader" t="Include" />
+              <e p="SWS_ShaderMapRenderer.shader" t="Include" />
+            </e>
+            <e p="EnableDepthBuffer.cs" t="Include" />
+            <e p="Resources" t="Include">
+              <e p="StylizedWaterReflectionBlur.shader" t="Include" />
+            </e>
+            <e p="StylizedWater.cs" t="Include" />
+            <e p="StylizedWaterBlur.cs" t="Include" />
+            <e p="StylizedWaterRenderer.cs" t="Include" />
+            <e p="StylizedWaterResources.cs" t="Include" />
+            <e p="StylizedWaterShadowCaster.cs" t="Include" />
+            <e p="StylizedWaterUtilities.cs" t="Include" />
+            <e p="Textures" t="Include">
+              <e p="Heightmap" t="Include">
+                <e p="readme.txt" t="Include" />
+              </e>
+              <e p="Intersection" t="Include">
+                <e p="readme.txt" t="Include" />
+              </e>
+              <e p="Normals" t="Include">
+                <e p="readme.txt" t="Include" />
+              </e>
+            </e>
+          </e>
+          <e p="Shaders" t="Include">
+            <e p="StylizedWater_Desktop.shader" t="Include" />
+            <e p="StylizedWater_Mobile.shader" t="Include" />
+          </e>
+        </e>
       </e>
       <e p="obj" t="ExcludeRecursive" />
       <e p="Packages" t="ExcludeRecursive" />

@@ -190,6 +190,11 @@ public class PlayerController : MonoBehaviour, IRunner
         return groundCheck;
     }
 
+    public void OnGameFinished()
+    {
+        _inControl = false;
+    }
+    
     public void SwitchPhase(GameplayPhases newPhase)
     {
         switch (newPhase)
@@ -204,8 +209,8 @@ public class PlayerController : MonoBehaviour, IRunner
                 _inControl = false;
                 currentPhase = newPhase;
                 _anim.SetBool(IsRunning, true);
-                GameManager.Instance.thirdPersonCamera.m_Priority = 1;
-                GameManager.Instance.thirdPersonCameraUpwards.m_Priority = 1;
+                GameManager.Instance.paintingCamera.m_Priority = 10;
+                _rb.isKinematic = true;
 
                 var paintingPosition = GameManager.Instance.paintingTransform.position;
                 var toPaintingPosition = paintingPosition - transform.position;

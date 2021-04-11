@@ -196,7 +196,6 @@ public class OpponentController : MonoBehaviour, IRunner
             _jumpTime = Time.time;
             var jumpForce = (transform.forward + Vector3.up * 1.5f).normalized * jumpPower;
             _rb.AddForce(jumpForce, ForceMode.VelocityChange);
-            Debug.Log("Opponent jump");
         }
     
         public void Respawn()
@@ -275,13 +274,13 @@ public class OpponentController : MonoBehaviour, IRunner
         var targetPos = GameManager.Instance.checkpoints.Count <= CurrentCheckpointIndex + 1
             ? GameManager.Instance.checkpoints[CurrentCheckpointIndex].spawnPoints[_runnerID].transform.position
             : GameManager.Instance.checkpoints[CurrentCheckpointIndex + 1].spawnPoints[_runnerID].transform.position;
-
+        
         if (NavMesh.CalculatePath(transform.position, targetPos, NavMesh.AllAreas, _path))
         {
             for (int i = 0; i < _path.corners.Length - 1; i++)
                 Debug.DrawLine(_path.corners[i], _path.corners[i + 1], Color.red);
 
-            if (_path.corners.Length > 1)
+            if (_path.corners.Length > 1 && Vector3.Distance(_path.corners[_path.corners.Length - 1], transform.position) > 2)
             {
                 var dir = (_path.corners[1] - transform.position).normalized;
                 //dir.y = 0;

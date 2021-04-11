@@ -6,6 +6,7 @@ using Cinemachine;
 using Interfaces;
 using PaintIn3D;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.Serialization;
 using UnityEngine.UI;
 
@@ -14,7 +15,7 @@ public class GameManager : MonoBehaviour
     public static GameManager Instance;
 
     public List<IRunner> CurrentRunners = new List<IRunner>();
-    public CinemachineVirtualCamera thirdPersonCamera, thirdPersonCameraUpwards;
+    public CinemachineVirtualCamera thirdPersonCamera, thirdPersonCameraUpwards, paintingCamera;
     public Transform paintingTransform, paintingSphere;
     public List<Checkpoint> checkpoints = new List<Checkpoint>();
     
@@ -75,6 +76,7 @@ public class GameManager : MonoBehaviour
                 if (_p3dChangeCounter.Ratio <= 1 - requiredPaintingPercentage)
                 {
                     EndGame();
+                    _playerControllerInstance.OnGameFinished();
                 }
                 break;
             default:
@@ -129,35 +131,14 @@ public class GameManager : MonoBehaviour
             }
 
             _playerControllerInstance.SwitchPhase(PlayerController.GameplayPhases.PaintingPhase);
+
+            foreach (var currentRunner in CurrentRunners)
+            {
+                currentRunner.HasFinished = true;
+            }
         }
         else if (_finishedRunners.Count == 10)
             EndGame();
-        
-        /*if (_finishedRunners.Count == 10)
-            EndGame();
-        else if (runner == _player)
-        {
-            var c = 0;
-            CurrentRunners = CurrentRunners.OrderBy(runnerInList => Vector3.Distance(runnerInList.RunnerTransform.position, finishLine.position)).ToList();
-            while (_finishedRunners.Count < 10)
-            {
-                _finishedRunners.Add(CurrentRunners[c]);
-                c++;
-            }
-            EndGame();//end it when the painting is done
-        }*/
-        /*if (runner == _player)
-        {
-            var c = 0;
-            CurrentRunners = CurrentRunners.OrderBy(runnerInList => Vector3.Distance(runnerInList.RunnerTransform.position, finishLine.position)).ToList();
-            while (FinishedRunners.Count < 10)
-            {
-                FinishedRunners.Add(CurrentRunners[c]);
-                c++;
-            }
-            EndGame();
-        }
-        else if (FinishedRunners.Count == 10) EndGame();*/
     }
 
     public void PaintingPanelActivator()
@@ -165,8 +146,10 @@ public class GameManager : MonoBehaviour
         rankingPanel.SetActive(false);
         paintingPanel.SetActive(true);
     }
-    
-    public void EndGame()
+
+    public void RestartGame() => SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+
+    private void EndGame()
     {
         playerRankText.transform.parent.gameObject.SetActive(false);
         if (_finishedRunners.Contains(_player))
